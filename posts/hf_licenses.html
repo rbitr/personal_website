@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Licenses used for AI model weights</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2>Licenses used for AI model weights</h2>
+<p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>July 21, 2023</a></p>
+<p>AI model weights are the parameters that define how an AI model calculates its output. There is not a clear consensus about how they should be treated with respect to copyright and licensing. But there are already thousands of extant models that have been released under various licenses, mostly those that have been used with software and data.</p>
+<p>Below is a table of the licenses that have been applied to large language models weights (specifically text generation models) on Hugging Face model hub<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> a popular public repository for sharing models.</p>
+<p>The data comes from the HFApi python API and is from the morning of July 21, 2023. The license is based on the “license” tag for each shared model repository and set to “unspecified” when no tag is found. I summarized the data to look at what kinds of licenses are most popular, and to what extent copyleft is being employed. The data is skewed by popularity of models because most of these are derivatives or variants. If we really wanted to know what licenses were most popular when releasing a new model we’d have to separate originals from fine-tuned versions.</p>
+<p>The majority of models don’t have a license specified. I think this is because it’s a public model hub that anyone can upload to and many are using it as storage or for experiments rather than releasing models with complete information. I sampled the ones that did not have licenses attached and what I saw looked mostly like junk – as in someone had uploaded weights but not documented anything.</p>
+<p>Of the 4,789 models where a license is specified, 4,029 are open source by the accepted definition (for software). Of the non-open source licenses, 471 are variations of RAIL, a license that restricts how the model can be used. (I should note there is also an “other” category not included in the breakdown but containing many Facebook OPT licenses that have similar restrictions). The other non-open models are mainly versions of Creative Commons licenses with commercial restrictions.</p>
+<p>Copyleft (open source licenses that require sharing of all derivative works under similar licenses) clauses are present in only 228 of the licenses. Copyleft has been a powerful force in keeping software open (for example keeping Linux as a viable open source operating system). I believe it can be used as a strategic option in keeping AI open as well<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>. There is some uptake currently, although the 228 licenses represent only about 5% of the total. I’ll speculate a bit to say that I’d guess awareness of copyleft as a strategic choice is still low, and current licenses designed for software would need to be modified to provide clarity about how they apply to model weights.</p>
+<p>A small overall number are released under licenses that opt out of any copyright and have no restrictions, such as wtfpl, unlicensed, and CC0.</p>
+<p>A total of 436 models are Creative Commons licensed – some of these are open source while others have incompatible restrictions. Interestingly, Creative Commons more popular as an artistic license and not recommended for software due to lack of specific terms about source code and incompatibility with other software licenses<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. They are however recommended for databases. One model in the list is released under pddl, another data license, although its documentation isn’t complete. There is an ongoing discussion about how licenses apply to model weights and not a clear consensus on how they should be licensed<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>, so it is interesting to see some people choosing database licenses over software licenses, though the majority still defaults this way.</p>
+<table>
+<thead>
+<tr class="header">
+<th>License</th>
+<th>Count</th>
+<th>Notes</th>
+<th>Open Source</th>
+<th>Copy left</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>unspecified</td>
+<td>12884</td>
+<td>Tag added when no license tag was present in the repo</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>mit</td>
+<td>1819</td>
+<td>Standard open source: https://opensource.org/license/mit/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>apache-2.0</td>
+<td>1807</td>
+<td>Standard open source: https://www.apache.org/licenses/LICENSE-2.0</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>other</td>
+<td>833</td>
+<td>Includes many variations of OPT models (created by Facebook). Example license (non-open source): https://huggingface.co/facebook/opt-6.7b/blob/main/LICENSE.md</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>openrail</td>
+<td>163</td>
+<td>Non open-source license with use restrictions essentially imposing the world view of the creator on downstream users: https://www.licenses.ai/blog/2022/8/18/naming-convention-of-responsible-ai-licenses</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>bigscience-bloom-rail-1.0</td>
+<td>149</td>
+<td>Non open-source license with use restrictions, a variant of openrail</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>cc-by-nc-4.0</td>
+<td>126</td>
+<td>Non-commercia (and so not open source): https://creativecommons.org/licenses/by-nc/4.0/</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>cc-by-nc-sa-4.0</td>
+<td>97</td>
+<td>Non-commercial copyleft-style: https://creativecommons.org/licenses/by-nc-sa/4.0/</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>cc-by-sa-4.0</td>
+<td>69</td>
+<td>Copyleft style open source: https://creativecommons.org/licenses/by-sa/4.0/<br />
+Note that cc licenses are not recommended for source code: https://opensource.stackexchange.com/questions/1717/why-is-cc-by-sa-discouraged-for-code<br />
+https://creativecommons.org/faq/#can-i-apply-a-creative-commons-license-to-software</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>creativeml-openrail-m</td>
+<td>67</td>
+<td>Non open-source license with use restrictions, a variant of openrail</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>gpl-3.0</td>
+<td>64</td>
+<td>Copyleft open source: https://www.gnu.org/licenses/gpl-3.0.en.html</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>bigscience-openrail-m</td>
+<td>53</td>
+<td>Non open-source license with use restrictions, a variant of openrail</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>cc</td>
+<td>50</td>
+<td>Appears to be a catch-all for CC license where variant is not specified</td>
+<td>?</td>
+<td>?</td>
+</tr>
+<tr class="even">
+<td>bsd-3-clause</td>
+<td>49</td>
+<td>Standard open source: https://opensource.org/license/mit/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>bigcode-openrail-m</td>
+<td>39</td>
+<td>Non open-source license with use restrictions, a variant of openrail</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>unknown</td>
+<td>37</td>
+<td>License tag in repo indicates "unknown"</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>cc-by-sa-3.0</td>
+<td>35</td>
+<td>Earlier version of license above: https://creativecommons.org/licenses/by-sa/3.0/</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>cc-by-4.0</td>
+<td>33</td>
+<td>Attribution only required for derivative works: https://creativecommons.org/licenses/by/4.0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>afl-3.0</td>
+<td>31</td>
+<td>Academic freedom license, open source: https://opensource.org/license/afl-3-0-php/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>agpl-3.0</td>
+<td>28</td>
+<td>Affero GPL: Copyleft GPL-V3 requiring distribution of source code if you run a modified version on a server: https://www.gnu.org/licenses/agpl-3.0.en.html</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="odd">
+<td>gpl</td>
+<td>21</td>
+<td>Unspecified version of open source GPL: https://www.gnu.org/licenses/licenses.html#GPL</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>wtfpl</td>
+<td>19</td>
+<td>Unrestricted license (open source): http://www.wtfpl.net/about/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>unlicense</td>
+<td>12</td>
+<td>Unrestricted license (open source): https://en.wikipedia.org/wiki/Unlicense</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>cc-by-nc-nd-4.0</td>
+<td>7</td>
+<td>You can share but can't make derivatives (not open source): https://creativecommons.org/licenses/by-nc-nd/4.0/</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>artistic-2.0</td>
+<td>6</td>
+<td>An open source license with a re-licensing clause: https://opensource.org/license/artistic-2-0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>cc-by-3.0</td>
+<td>5</td>
+<td>An earlier version of the cc-by license: https://creativecommons.org/licenses/by/3.0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>bsd</td>
+<td>5</td>
+<td>No specified version of BSD license</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>cc-by-nc-2.0</td>
+<td>5</td>
+<td>An earlier version of the cc-by-nc (non-commercial) license: https://creativecommons.org/licenses/by-nc/2.0/</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>lgpl</td>
+<td>4</td>
+<td>Lesser GPL allows linking as a module without applying the license to the rest of the project: https://www.gnu.org/licenses/lgpl-3.0.en.html</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>bsd-2-clause</td>
+<td>4</td>
+<td>Simplified version of the BSD open source license: https://opensource.org/license/bsd-2-clause/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>cc0-1.0</td>
+<td>3</td>
+<td>Opt out of copyright protection: https://creativecommons.org/share-your-work/public-domain/cc0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>cc-by-2.0</td>
+<td>3</td>
+<td>Earlier version of license above: https://creativecommons.org/licenses/by/2.0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>cc-by-nc-3.0</td>
+<td>3</td>
+<td>Earlier version of license above: https://creativecommons.org/licenses/by-nc/3.0/</td>
+<td></td>
+<td></td>
+</tr>
+<tr class="even">
+<td>gpl-2.0</td>
+<td>3</td>
+<td>GPL version 2 open source license: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="odd">
+<td>osl-3.0</td>
+<td>2</td>
+<td>Copyleft open source license similar to AGPL: https://opensource.org/license/osl-3-0-php/</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>ecl-2.0</td>
+<td>2</td>
+<td>Educational open source license with modified patent terms: https://opensource.org/license/ecl-2-0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>mpl-2.0</td>
+<td>1</td>
+<td>A hybrid open-source license with a compromise on viral application: https://www.mozilla.org/en-US/MPL/2.0/</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>pddl</td>
+<td>1</td>
+<td>An open data license placing data in the public domain: https://opendatacommons.org/licenses/pddl/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>lgpl-3.0</td>
+<td>1</td>
+<td>Lesser GPL allows linking as a module without applying the license to the rest of the project: https://www.gnu.org/licenses/lgpl-3.0.en.html</td>
+<td>x</td>
+<td>x</td>
+</tr>
+<tr class="even">
+<td>bsl-1.0</td>
+<td>1</td>
+<td>An open source license: https://choosealicense.com/licenses/bsl-1.0/</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>bsd-3-clause-clear</td>
+<td>1</td>
+<td>BSD license with explicit statement that no patent rights are granted: https://spdx.org/licenses/BSD-3-Clause-Clear.html</td>
+<td>x</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>llama2</td>
+<td>1</td>
+<td>Meta (Facebook) specific restricted license for their language model</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a href="https://huggingface.co/models">https://huggingface.co/models</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><a href="http://marble.onl/posts/motivations_for_open_source.html">http://marble.onl/posts/motivations_for_open_source.html</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p><a href="https://creativecommons.org/faq/#can-i-apply-a-creative-commons-license-to-software">https://creativecommons.org/faq/#can-i-apply-a-creative-commons-license-to-software</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p><a href="https://opencoreventures.com/blog/2023-06-27-ai-weights-are-not-open-source/">https://opencoreventures.com/blog/2023-06-27-ai-weights-are-not-open-source/</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
