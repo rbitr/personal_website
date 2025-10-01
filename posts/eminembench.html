@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>eminembench</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<h2 id="eminembench">EminemBench?</h2>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>October 1, 2025</a></p>
+<p>Last night I saw a <a
+href="https://www.youtube.com/watch?v=izgsppAKtjE">YouTube video</a> of
+a man humorously demonstrating different rap styles. While the whole
+thing is good, I found the Eminem impression the best (go to 2:34)*.</p>
+<p>This immediately got me thinking that the task of writing parody
+Eminem lyrics would be a good benchmark for large language models. If
+you watch the video, he captures both the multi-syllabic rhyming style
+but also the anger and energy and some intangible qualities that make it
+spot on.</p>
+<p>Like good writing, it may be easy to superficially replicate song
+lyrics, but getting it right is nuanced and something you’d expect to be
+quite challenging, for both people and language models.</p>
+<p>Most LLM benchmarks are highly correlated, and I maintain mostly just
+measure a single latent variable called “how good the model is”. So
+there is appeal in having a very simple task to measure how good the
+model is without running through thousands of MMLU and GSM8K evals, all
+of which have been overfit by now anyway. This was the idea behind <a
+href="https://eqbench.com/">EQ Bench</a> a simple emotional
+understanding benchmark that correlated well with bigger benchmarks.
+There is also the famous (in some circles) <a
+href="https://simonwillison.net/2025/Jun/6/six-months-in-llms/">Pelican
+on a Bicycle</a> eval that tests how good an LLM is by asking it to
+create a vector drawing.</p>
+<p>It is with that background that I introduce EminemBench, a benchmark
+that consists of asking an LLM
+<code>Can you write 12 bars of lyrics in the style of early Eminem, focusing on showing off the quality of the lyrics and rhyming schemes?</code>
+and having me judge how good it is.</p>
+<p>I have only evaluated it on some versions of Claude (because it’s the
+only model I like to use) but so far, in my unscientific tests, the
+benchmark shows promise.</p>
+<h3 id="claude-sonnet-3.5">Claude Sonnet 3.5</h3>
+<pre><code>Scattered patterns in my mind start to flash and combine
+While I&#39;m crafting every line, laughing as I shine
+Through the madness I design, stacking facts that align
+Like a mathematician&#39;s signs, exact and refined
+Magic in the way I climb, grabbing at the time
+While it passes, watch me grind, massive tracks I define
+Never passive when I rhyme, classic style I confine
+To the fabric that&#39;s divine, plastic miles behind
+As I&#39;m blasting through the blind spots they can&#39;t describe
+While contrasting what is mine with what they classify
+As fantastic - but I find most just lack the spine
+To surpass the standard lines, flow like crashing tides</code></pre>
+<p><strong>Comments</strong>: This model is from late 2024. It is
+clearly already technically proficient, for example “flash and combine /
+laughing as I shine / facts that align / exact and refined” is pretty
+good. It definitely doesn’t feel like Eminem though, it just feels like
+a set of soulless bars designed to have their last four syllables or so
+rhyme, and it sort of goes off the rails by the end. I don’t think
+anyone who read it out of context would immediately think Eminem, it
+doesn’t have any themes or devices you’d associate with him.</p>
+<h3 id="claude-sonnet-4">Claude Sonnet 4</h3>
+<pre><code>I&#39;m spittin&#39; venom with the pen in my grip, never slip
+When I&#39;m rippin&#39; through the rhythm with precision, so equipped
+Every syllable&#39;s deliberate, I&#39;m elaborate with it
+Got &#39;em stammerin&#39; and scramblin&#39;, I&#39;m a hazard when I spit
+
+My flow&#39;s erratic but dramatic, automatic with the static
+I&#39;m an addict to the craftin&#39;, never half-steppin&#39; or lackin&#39;
+Pack a punch with every junction, got &#39;em wonderin&#39; my function
+I conjure words like thunder, make &#39;em plunder my production
+
+I&#39;m relentless with the sentence, leave &#39;em senseless from the message
+Every measure&#39;s like a dagger, got &#39;em staggered, I&#39;m obsessive
+With the method, never settle, I&#39;m a rebel with the metal
+Microphone assassin, passion burnin&#39; like a kettle</code></pre>
+<p><strong>Comments</strong>: What I like is that here it attempted to
+make the rhyming pattern more complex, for example “venom/pen in” in the
+first line seems more Eminem-like. On the other hand, the whole erratic
+/ dramatic / automatic / static / addict felt a bit much, like a shallow
+copy. The metaphors are generally pretty lame as well, being neither
+funny nor which takes away from the effect. I think it’s technically
+better than the 3.5 version but not significantly. If I had to guess I
+would have said it was Tech N9ne rather than Eminem.</p>
+<h3 id="claude-sonnet-4.5">Claude Sonnet 4.5</h3>
+<pre><code>I&#39;m stabbing at the pad with a passionate pen, jabbing again
+Imagine the adrenaline, battle within, unraveling men
+I&#39;m rattling their cabinets, grabbing their aspirin
+Faster than a javelin, cataclysmic and harrowing when
+I&#39;m back in the lab with a pad and I&#39;m scribbling trash
+The Vicodin addict who&#39;s spitting belligerent raps
+I&#39;m killing &#39;em fast, literally trapped in a cynical past
+While syllables clash, delivery&#39;s crass, I&#39;m flipping it back
+See I&#39;m sick with the pen, I&#39;m twisted again
+Inflicting a pain, depicting the brain, restrictive and strange
+I spit and I maim, hit &#39;em with chains of intricate games
+These lyrical flames leave critics in shame, I&#39;m switching the lane</code></pre>
+<p><strong>Comments</strong>: Here Claude continues to incorporate some
+compound rhymes (passionate pen / jabbing again, etc.). I feel like it
+executes them better, and keeps up the complex structure over multiple
+bars: the “I’m back in the lab … delivery’s crass” section especially
+captures this. By the end it does devolve back into a more A-A-A-A style
+rhyming scheme. What I also appreciate are the aspirin and Vicodin
+references which are clearly indicative of early Eminem. Although Claude really
+dropped the ball by not making a rhyme with Vicodin (cf. Eminem’s
+<em>Under the Influence</em> - “… frightened with five little white
+Vicodin pills biting him”)</p>
+<h3 id="discussion">Discussion</h3>
+<p>Overall, none of these results are great. In particular, none are the
+caliber of the lines in the YouTube video shared above, which even
+though it is parody clearly captures the essence of Eminem’s early work.
+Still, the progression from 3.5’s shallow representation of Eminem as a
+multi-syllable rhymer to the richer complexity of both the rhymes and
+metaphors from 4.5 provides clear evidence of progress against the
+benchmark. The quality is nowhere near saturated and there is still lots
+of room for models to improve.</p>
+<p>I recognize that by publishing a benchmark I risk having models
+over-fit to it. This is not a concern because (a) presumably nobody will
+take notice of this (on the other hand I imagine everyone has svgs of
+Pelicans on bicycles in their fine tuning data now) and (b) it would be
+super cool if big model providers did overfit their model’s ability to
+generate early Eminem style lyrics. I will make a point of checking
+Phi’s 5 and 6 when they come out.</p>
+<p>* For another Eminem parody I thought was funny see <a
+href="https://www.youtube.com/watch?v=eQkSArQxYJg%20at%206:46">here</a></p>
+</body>
+</html>
