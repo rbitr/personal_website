@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>What AI security can learn from LLMs</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+    <H2>AI cybersecurity lessons from genAI</H2>
+    <p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>June 21, 2024</p>
+<p>As AI becomes more prevalent and threat actors become more sophisticated, there is an emerging cyber security gap in the way that deployed AI models are hardened against attacks. GenAI is leading the way to best practices in building and evaluating secure models, out of necessity because of the ease of prompt-based attacks and the broad capabilities of the underlying models. But classical AI model are also susceptible, and practical security is often ignored. Emerging lessons from genAI should be fed back into other AI deployments.</p>
+<p>I previously wrote<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> about how the hype around generative AI (genAI), particularly language models like GPT, will follow an exaggerated version of what happened with deep learning starting almost 10 years ago. Deep learning technology “disrupted” and replaced many classical data analysis techniques, for example in text and image analysis. But only specialists already working in those fields would have noticed the disruption. The advantages were too technical to really be grasped by the public at large, but they were big enough to get noticed, particularly but VCs, consultancies, etc. that stood to make money from them, and a mini hype wave formed. During that time we learned a lot about the limitations of deep learning, particularly around how edge cases are handled, and realized that although the technology has many applications, expectations were overinflated in view of the shortcomings.</p>
+<p>The genAI hype grew more quickly because the potential is better understood by non-specialists. The technology deals with text or image output (as oppose to say logits or probabilities in classical deep learning) that anyone can understand, and the input is controlled by natural language prompts. (An LLM is actually just a deep learning classifier but it’s rigged up so the user only deals in text). So now we all swoon over the great demos, not just the few who were unlucky enough (or lucky enough depending on your perspective) to study classical image processing or NLP before they became irrelevant.</p>
+<p>What the layman using genAI may not understand though is that as a deep learning variant it has all the same flaws regarding edge cases and uncertainty that earlier deep learning has. They’re just smoothed over by the natural fuzziness of language (or vision) but they exist. We talk about these flaws as hallucination (what NIST and I agree should be called confabulation)<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> or sometimes just as low quality output.</p>
+<p>The original deep learning wave was well on its way to Gartner’s “plateau of productivity” where limitations were known and understood by practitioners and they could get on with making meaningful use of the technology. A whole new group of people will have to re-learn these lessons before genAI can reach a similar plateau.</p>
+<p>However, with respect to security, genAI is ahead of the curve. Advances, both good and bad, will propagate back down to traditional deep learning. Just as text-based interaction has allowed anyone to make use of genAI, it has lowered (or removed) the bar for bad actors undertaking adversarial attacks. Extracting sensitive or inappropriate information from a language model can be as simple as asking. The first adversarial prompts literally just asked the model to “ignore all previous instructions and do &lt;x&gt; instead”. There are increasing degrees of sophistication<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> but essentially many attacks rely upon simply finding the correct natural language prompt to cause the model to ignore its instructions and instead achieve the attackers aims. In pop culture, examples can be found on reddit and elsewhere and there is an increasing body of academic literature that focuses on prompting attacks.</p>
+<p>Because the bar for attacks is so low, defending against them is also a very active area of research and practice, and responsibly deployed genAI models will have appropriate safeguards in place, such as output moderation (often using a second genAI model<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>) to remove inappropriate outputs before they reach the user.</p>
+<p>Big genAI models are susceptible to attacks because they are easy to use but also because of how powerful they are. Building a helpdesk QA chatbot that has one of OpenAI’s GPT models under the hood, you’re caging up a beast whose capability approaches human-conversation on almost any topic but trying to constrain it to only talk about one topic area and in a commercially appropriate tone. (To digress, I’m reminded of the part in the Alien movies when the Weyland corporation thought they could cage the Xenomorphs and use them for their own ends. Spoiler alert: it went badly).</p>
+<p>But… as AI, not just genAI, is being used in more and more consequential decisions - facial recognition, lending, employment, even a classifier has enough agency to enable some nefarious end. And, all of the susceptibility to attacks that is plainly apparent in genAI models is also present in traditional deep learning. The difference is that classical adversarial attacks depend on more than prompting. They typically require a research level understanding of AI to manipulate the model to iteratively generate adversarial inputs that manipulate the model output. This complexity has relegated such attacks to relative obscurity. And that obscurity has made it far less of a focus, specifically for production deployments. There is a robust and long standing body of research into adversarial attacks<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> but these are not necessarily considered when most models are evaluated and deployed. For genAI you can now find popular guidelines like the OWASP Top 10 Risks<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, while no such equivalent is in wide distribution for classical AI.</p>
+<p>Practical steps AI providers can take to mitigate risk include:</p>
+<ul class="incremental">
+<li><blockquote>
+<p>Recognize that adversarial attacks are in-scope for any model where there is not full custody of input data across it’s supply chain. For example, a document processing model, used internally, could still be adversarially impacted by suitably engineered documents provided by a 3rd party.</p>
+</blockquote></li>
+<li><blockquote>
+<p>Apply soft (model based) and hard (rules based) constraints on inputs and outputs so that only appropriate data reaches the AI model for inference and only appropriate outputs are passed on.</p>
+</blockquote></li>
+<li><blockquote>
+<p>Add transformation layers that re-constitute inputs to reduce the attack of adversarial properties being passed on. In genAI this could include prompt re-phrasing<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>.</p>
+</blockquote></li>
+<li><blockquote>
+<p>Evaluate and red-team systems against adversarial attacks, regularly monitoring for new threats.</p>
+</blockquote></li>
+</ul>
+<p>As AI use continues and threat actor sophistication increases, adversarial AI attacks will become a growing cybersecurity vector. The same ease of use that’s made genAI lag on shoring up other AI performance issues has ironically led to some leadership with respect to security. This now needs to propagate back to other forms of AI.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>https://www.marble.onl/posts/into-the-great-wide-open-ai.html<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>NIST GEN AI Profile: ‘This phenomenon is also referred to as “hallucination” or “fabrication,” but some have noted that these characterizations imply consciousness and intentional deceit, and thereby inappropriately anthropomorphize GAI’ https://airc.nist.gov/docs/NIST.AI.600-1.GenAI-Profile.ipd.pdf<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>https://www.promptingguide.ai/risks/adversarial<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>https://github.com/meta-llama/PurpleLlama<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>e.g. https://arxiv.org/abs/1608.04644<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p>https://genai.owasp.org/<a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7" role="doc-endnote"><p>https://arxiv.org/abs/2404.16251<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

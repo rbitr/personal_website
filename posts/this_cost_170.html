@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>this_cost_170</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<h2>I paid $170 and all I got was this stupid demo</h2>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>February 9, 2026</a></p>
+<p>AI is pretty notorious for making great, 80% demos, that never scale
+to something usable. For the record, I remain an AI bull, obviously it’s
+not a fad, and has real utility that will be world changing. But it’s
+also very over-hyped. The cool demo problem is a Ponzi scheme in a
+sense. Something gets announced, it looks awesome, and then when people
+start digging in they see all the edge cases where it doesn’t work, and
+what it would take to get to something productive, and start getting
+disillusioned. But then there’s an even cooler demo that makes us forget
+the shortcomings we noticed and get dazzled again. As long as newer,
+cooler things keep arriving faster than people can critically assess
+them, the scheme keeps working, but we're paying back past promises with
+new inventions, and when they stop there will be trouble.</p>
+<p>The real unfortunate part is that until they stop, we’re not going to
+collectively focus on doing something useful with AI, but instead we’ll
+keep chasing cool demos.</p>
+<p>Case in point: recently there has been hype around AI coding agents
+building big projects autonomously:</p>
+<ul class="incremental">
+<li><p>Cursor wrote a “from scratch” web browser with AI, using parallel
+coding agents to generate over a million lines of code in a week: <a
+href="https://cursor.com/blog/scaling-agents">https://cursor.com/blog/scaling-agents</a></p></li>
+<li><p>Anthropic used Claude Code agents running in parallel to write a
+C compiler that can compile the Linux kernel: <a
+href="https://www.anthropic.com/engineering/building-c-compiler">https://www.anthropic.com/engineering/building-c-compiler</a>
+This apparently cost $20,000 in token use.</p></li>
+</ul>
+<p>Keeping the analogy, these “cool demos” glossed over existing
+problems (of which there are many) in AI assisted coding, and showed how
+LLMs can be orchestrated to write million LOC projects autonomously. Of
+course they have some rough edges, are slower and buggier than real
+software, etc. but the principle is there, right?</p>
+<p>Browsers and compilers have a lot in common from a vibe coding
+perspective in that both have detailed existing behavioral
+specifications. This makes thorough testing comparatively easy because
+someone has told us exactly how the software should behave. It also
+allows one to declare victory (“it mostly adheres to the spec”) while
+glossing over factors that are more important in most real software
+projects, like taste.</p>
+<p>Having seen the above projects, I wanted to try something of my own,
+and believe it or not, had pretty high expectations, having been wowed
+by these demos. The project I chose was a Google Docs competitor (I
+can’t stand Google Docs, but that’s not important here). The project
+repo is here <a
+href="https://github.com/rbitr/altdocs">https://github.com/rbitr/altdocs</a>
+and a running version is hosted (for now) at <a
+href="https://myaltdocs.com/">https://myaltdocs.com/</a>.</p>
+<p>The repo includes the instructions and script to run the coding agent
+(here Claude Code / Opus 4.6) so I won’t go into much detail. Briefly, I
+followed the Anthropic compiler example linked above, except used only a
+single agent. I wrote a short document describing the meta-project of
+writing a coding agent that runs in a loop to build a Google Docs clone,
+and got Claude code to set up a design document (<code>spec/FEATURES.md</code>), a
+prompt (<code>AGENT_PROMPT.md</code>) and a shell script (<code>run_agent.sh</code>) to run
+the coding agent in a loop. I kicked this off on a virtual machine, and
+ran it for about 8 hours, with a few minor interventions.</p>
+<p>The total cost was $170. The logs show about 233 million input and
+1.5 million output tokens. I stopped when it looked like all the
+priority work had been completed (for some value of completed) and I
+decided I didn’t want to spend any more money. I had planned to spend
+&lt;$50 but there’s always this gambling feeling where spending a
+little bit more will result in a big payoff, so I went over budget. I
+used the API instead of a Claude Code plan – I didn’t want to hit a
+usage limit, and I also wasn’t sure if it was kosher to use a plan to
+run an agent in a loop and didn’t want to get banned.</p>
+
+<video width=95% autoplay loop>
+  <source src="demo.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
+<p>The result is OK. It has all the features I asked for, and includes
+document sharing, collaborative editing in real time, support for fonts
+and line spacing, etc. etc. I could not have paid a developer $170 and
+got this. The problem, of course, is that, while abstractly impressive,
+this is completely useless, and I see no pathway for it to become useful
+with more effort.</p>
+<p>There are lots of bugs or poor choices depending on how you want to
+frame them. The whole web page scrolls instead of just the writing area.
+The table and image functionality are poor (they can’t be positioned or
+resized, can’t adjust the font in a table cell, …). Bullet points don’t
+really work. I wanted document editor style margin control and got bulk
+indent. It added collaboration but no account management or
+authorization.</p>
+<p>We could add all these things, but it doesn’t solve the apparent
+problem that there is no taste being applied. With a compiler or
+browser, taste is barely necessary, because the spec is there. With a
+UX-driven tool like a document editor, there’s no hiding in spec
+compliance, it’s easy to see if the product is crap or not. And while
+academically I think it’s very cool that one can use AI to write a
+functional collaborative rich text editor in a day, this isn’t going to
+replace Google Docs anytime soon, and I see no evidence that would
+change if I were to spend 10x or 100x as much.</p>
+<p>I anticipate criticism about the setup or the prompting. I’m sure in
+the space of all prompts, there is one that would have provided a better
+outcome, the question is how much time must one spend on searching that
+space, and how much better the outcome. I see nothing to suggest that
+changing the prompt or architecture (say agents with specialized roles
+like Cursor used) would bring about a step change that would put this on
+track to be a competitive piece of software.</p>
+<p>Likewise, I could work on improving the spec. This, as already
+mentioned, would be whack-a-mole, fixing gaps in the current spec will
+just reveal new ones. Without the required taste in the first place,
+it’s a losing battle.</p>
+<p>The proof is in the pudding, obviously, so if there are agentic coded
+projects of this nature with materially better outcomes, I would love
+to see them. Hopefully sharing this will help people who don't want
+to spend a few hundred dollars get a sense of what to expect.</p>
+<p>It might not seem like it, but my original plan was to write a “look
+at this cool thing I built” article and highlight the good aspects of
+the project. It was only when I started writing that I realized how
+disappointed I am and changed tack. None of this means I’m dismissive of
+AI. There are people who any time AI doesn’t meet the most hyped up
+predictions, pounce and say things like “let’s be honest, generative AI
+isn’t going all that well”. I don’t want to give that impression. But
+it’s important to take a sober look at what the current state is, and
+how we can shore up weaknesses in the technology to get useful work out
+of it, instead of just jumping from demo to demo.</p>
+</body>
+</html>

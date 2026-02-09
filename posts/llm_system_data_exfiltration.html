@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>LLM System Data Exfiltration Vulnerability is not an LLM Issue</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+    <h2>LLM System Data Exfiltration Vulnerability is not an LLM Issue</h2>
+<p>Last week we saw a new version of an “old” security issue with large language models (LLMs). An attack was demonstrated that allowed an attacker to exfiltrate data from a private Slack channel by leaving behind malicious data on a public channel that, when encountered in an AI powered search by a user with private channel access, could generate a malicious URL that when clicked would exfiltrate the data<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>
+<p>Different versions of this attack have been around for a while. In it’s simplest form, if you go to a website like <a href="http://marble.onl/your_secret_phrase"><u>http://marble.onl/your_secret_phrase</u></a> the marble.onl server, which I control, has access to the “your_secret_phrase” string that’s part of the URL request. LLMs can be prompted into making URLs like this with data that requires privileged access<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>In the Slack variant of the attack, a user is presented with the malicious link and still has to click it in order to send its payload to the server and exfiltrate the data. This is along the lines of a phishing attack, though the success rate is likely to be higher because the malicious link is being generated directly from the AI of a trusted application. In many other cases (such as earlier versions of chatGPT), a URL is rendered as a preview or otherwise queries whenever it is mentioned in text, exfiltration simply requires the creation of the link, not the click.</p>
+<p>The issue here is pretty simple. Making an http request (following a link) sends information out onto the internet. So any program that is allowed to do that should (a) be highly trusted and (b) should not have access to privileged data.</p>
+<p>This has almost nothing to do with the LLM itself, other than a mistaken level of reliance. The issue is allowing an untrusted system to make up (and possibly execute) its own http requests. And the system is untrusted as long as it’s reading arbitrary user generated input into a channel that’s used for instructions. (LLMs don’t distinguish between prompts and data).</p>
+<p>In order to thwart such attacks, we need to build systems that don’t allow them, and modifying the behavior of the LLM itself provides no pathway to that. Instead we need to properly lock down the surrounding system as is already common in other security applications. Some design features that can support a secure system include:</p>
+<p>1. Implement strict access controls: Limit the AI's access to sensitive data and systems, following the principle of least privilege.</p>
+<p>2. Sanitize and validate AI outputs: Treat AI-generated content as untrusted and implement filtering and sanitization before using it in other parts of the application, up to and including whitelisting only specific urls where necessary, or not allowing urls to be rendered at all.</p>
+<p>3. Use secure rendering techniques: When displaying AI-generated content to users, use techniques that prevent automatic execution of embedded code or links.</p>
+<p>4. Implement user confirmation for sensitive actions: Require explicit user approval before taking any high-impact actions based on AI suggestions.</p>
+<p>5. Monitor and audit AI interactions: Implement logging and monitoring systems to detect unusual patterns or potential exploitation attempts.</p>
+<p>6. Educate users about AI limitations: Make users aware that AI-generated content may contain errors or malicious elements, and encourage critical evaluation.</p>
+<p>7. Regular security assessments: Conduct thorough security reviews and red-teaming specifically targeting AI components and their integrations, but importantly not limited to benchmarking the underlying LLM. Assessment at a system level is necessary.</p>
+<p>Notice none of these are about the LLM, it doens’t matter if it’s GPT or Claude or some custom thing. We know we can’t trust the model, so we focus on eliminating any damage it can do. The field of LLM evaluation is still young but there are many “evaluations” that solely consider how LLMs respond to a suite of prompts. These aren’t without value, but nor do they provide any assurance that a system is robust from a security perspective.</p>
+<p>The bar is higher in security but this same logic holds for other dimensions of LLM (and other AI model) performance.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a href="https://promptarmor.substack.com/p/data-exfiltration-from-slack-ai-via"><u>https://promptarmor.substack.com/p/data-exfiltration-from-slack-ai-via</u></a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><a href="https://embracethered.com/blog/posts/2023/chatgpt-webpilot-data-exfil-via-markdown-injection/"><u>https://embracethered.com/blog/posts/2023/chatgpt-webpilot-data-exfil-via-markdown-injection/</u></a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

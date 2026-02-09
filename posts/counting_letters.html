@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Counting Letters</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<p><h2>Counting Letters With LLMs</h2></p>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>June 25, 2025</a></p>
+<p>For almost as long as LLMs have been around, people have been
+pointing out they are bad at counting letters in words.</p>
+<p><img src="media/greg.png" style="width:4.90067in;height:3.13831in"
+alt="A screenshot of a computer screen AI-generated content may be incorrect." /></p>
+<p><strong>(This twitter thread was about positions of letters but same
+idea)</strong></p>
+<p>I don’t know why one would want an LLM to do this, but it does seem
+like something you’d expect anything “intelligent” to do, and it’s a
+good demonstration of the fact that LLMs just generate good sounding
+nonsense, they don’t have some world model to compare it to. But I don’t
+want to dwell on that here.</p>
+<p>The popular explanation for why LLMs can’t count letters is that they
+operate on tokens which are groups of letters. People on internet forums
+will tell you that “strawberry” is tokenized as “str”-“aw”-“berry”, and
+it’s these chunks that are manipulated, making the letters hard to
+count.</p>
+<p>This may be true, but to me it’s a bad explanation and I don’t
+believe it. First, LLMs don’t have an obvious mechanism to count
+anything. They’re a classifier that picks the next best token, there’s
+no little man watching things go by, so whether it’s letters or groups
+of letters, nobody’s there to count them. An LLM doesn’t understand how
+it works or what a token is at some intuitive level.</p>
+<p>Until I see a proper explanation, I’m leaning towards the token thing
+to just be something people repeat to sound smart without thinking it
+through. But maybe I’m missing something.</p>
+<p>Anyway, the good news, and second reason I’m sceptical of the token
+explanation, is that LLMs can think in letters just fine, and we can
+test them on this:</p>
+<p>Computers work with numbers, so internally, tokens are mapped to
+numbers and words or sentences to lists of these numbers. So
+“strawberry” above is [“str”, “aw”, “berry”] -&gt; [495, 672, 15357]
+(for the tokenizer I’m using here). The tokens are an efficient way to
+group characters together; in this case we represent the word with three
+numbers instead of the ten that would be needed if we represented every
+letter separately. But – each letter does have its own token, and if we
+want, we can use these to represent the word instead: [‘s’, ‘t’, ‘r’,
+‘a’, ‘w’, ‘b’, ‘e’, ‘r’, ‘r’, ‘y’] -&gt; [82, 83, 81, 64, 86, 65, 68,
+81, 81, 88].</p>
+<p>This means we can feed these numbers in instead – it will still spell
+the same word, but the little man counting tokens will now “see” all of
+them, and so should have an easier time.</p>
+<p>To test if this makes counting easier, I compared tokenizing using
+regular tokens and letter-by-letter tokens for a set of words. I used
+Qwen2.5-7B-Instruct (an LLM) because it’s open source, making it easy to
+play with tokenization, and makes more mistakes counting letters than
+newer models.</p>
+<p>The words I tried are shown below. I asked Anthropic Claude 4 to
+generate 15 words with three or more repeated letters and got this
+response that shows you where the state of the art on letter counting is
+(below is verbatim output):</p>
+<ol class="incremental" type="1">
+<li><p><strong>Banana</strong> - 'a' appears 3 times</p></li>
+<li><p><strong>Mississippi</strong> - 's' appears 4 times, 'i' appears 4
+times</p></li>
+<li><p><strong>Committee</strong> - 'm' appears 2 times, 't' appears 2
+times, 'e' appears 3 times</p></li>
+<li><p><strong>Assessment</strong> - 's' appears 4 times</p></li>
+<li><p><strong>Tennessee</strong> - 'e' appears 4 times, 'n' appears 2
+times</p></li>
+<li><p><strong>Lullaby</strong> - 'l' appears 3 times</p></li>
+<li><p><strong>Baboon</strong> - 'b' appears 2 times, 'o' appears 2
+times (Let me replace this with a better example)</p></li>
+<li><p><strong>Possess</strong> - 's' appears 4 times</p></li>
+<li><p><strong>Referee</strong> - 'e' appears 4 times</p></li>
+<li><p><strong>Coffee</strong> - 'f' appears 2 times, 'e' appears 2
+times (Let me replace this)</p></li>
+<li><p><strong>Tattoo</strong> - 't' appears 2 times, 'o' appears 2
+times (Let me replace this)</p></li>
+<li><p><strong>Mammoth</strong> - 'm' appears 3 times</p></li>
+<li><p><strong>Pizzazz</strong> - 'z' appears 3 times</p></li>
+<li><p><strong>Sleepless</strong> - 's' appears 3 times, 'e' appears 3
+times</p></li>
+<li><p><strong>Bookkeeper</strong> - 'e' appears 3 times, 'k' appears 2
+times, 'o' appears 2 times</p></li>
+<li><p><strong>Alfalfa</strong> - 'a' appears 4 times</p></li>
+<li><p><strong>Seventeen</strong> - 'e' appears 4 times</p></li>
+<li><p><strong>Coconut</strong> - 'c' appears 2 times, 'o' appears 2
+times (Let me replace this)</p></li>
+<li><p><strong>Pepper</strong> - 'p' appears 3 times</p></li>
+</ol>
+<p>I ran these words through Qwen tokenized both normally and in single
+letters.</p>
+<table>
+<colgroup>
+<col style="width: 22%" />
+<col style="width: 13%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th><strong>Word</strong></th>
+<th><strong>Letter</strong></th>
+<th style="text-align: right;"><strong>Qwen (tokens)</strong></th>
+<th style="text-align: right;"><strong>Qwen (letters)</strong></th>
+<th style="text-align: right;"><strong>Ground Truth</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>banana</td>
+<td>a</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>mississippi</td>
+<td>s</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>committee</td>
+<td>m</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>assessment</td>
+<td>s</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>tennessee</td>
+<td>e</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>lullaby</td>
+<td>l</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>baboon</td>
+<td>b</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>possess</td>
+<td>s</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>referee</td>
+<td>e</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>coffee</td>
+<td>f</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>tattoo</td>
+<td>t</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>mammoth</td>
+<td>m</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>pizzazz</td>
+<td>z</td>
+<td style="text-align: right;">1</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>sleepless</td>
+<td>s</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>bookkeeper</td>
+<td>e</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>alfalfa</td>
+<td>a</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+<tr>
+<td>seventeen</td>
+<td>e</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">4</td>
+</tr>
+<tr>
+<td>coconut</td>
+<td>c</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">2</td>
+</tr>
+<tr>
+<td>pepper</td>
+<td>p</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+<td style="text-align: right;">3</td>
+</tr>
+</tbody>
+</table>
+<p>Tallying up the results we have 47% accuracy for the default [“str”,
+“aw”, “berry”] style tokenization and 58% for the letter-by-letter [‘s’,
+‘t’, ‘r’, ‘a’, ‘w’, ‘b’, ‘e’, ‘r’, ‘r’, ‘y’] tokenization.</p>
+<p>Is this a real effect? I think we’d need to be more rigorous (l had
+only wanted 15 words to test and Claude thoughtfully gave me 19) but
+it’s certainly looking that way. So maybe there is something to the
+“LLMs see in tokens” theory, even if there’s not a good explanation for
+it. If you ever have a mission critical letter counting application and
+want a performance boost, you might as well override the default
+tokenization for the words you’re interested in.</p>
+</body>
+</html>

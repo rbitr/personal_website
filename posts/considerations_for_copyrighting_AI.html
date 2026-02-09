@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Technical considerations for applying copyright and copyleft to AI</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2 id="technical-considerations-for-applying-copyright-and-copyleft-to-ai">Technical considerations for applying copyright and copyleft to AI</h2>
+<p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>July 25, 2023</a></p>
+<p>I’ve seen lots of discussion about copyrighting AI. Topics such as whether weights can be protected, whether copyright of the training data is relevant, what licenses are appropriate, etc. Much of the discussion involves legal arguments but I think there has to be attention to <em>what</em> is being protected with copyright and licensing, from a technical perspective. Because the mechanics of what you can do with an AI model are different than what you can do with a book or a movie or traditional source code. Also, when getting into notions of what an open source or copyleft license means for AI, definitions of source code and redistribution don’t naturally carry from software.</p>
+<p>I’m not trying to give a legal perspective here, what I want to do is start a list of the stuff you can do with AI model code and weights specifically that you might want to think about licensing so that consideration can be given when drafting licenses. Based on the mapping between the requirements of free software, components of an AI model, and the types of modifications one can make, I suggest that <strong>sharing training data need not be a requirement to respect freedom for AI models</strong>. I also discuss how a <strong>distinction between foundation models and narrow or domain specific models</strong> can inform the definition of a derivative work (that would be covered under copyleft) with foundation models being the more usefully covered derivatives.</p>
+<p>The conceptual things you could do with an AI model map well to a software program – after all, it is still software. So when talking about what a license could allow, I’m going to use the components of the GNU free software definition<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>:</p>
+<ul class="incremental">
+<li><p>The freedom to run the program as you wish, for any purpose (freedom 0).</p></li>
+<li><p>The freedom to study how the program works, and change it so it does your computing as you wish (freedom 1). Access to the source code is a precondition for this.</p></li>
+<li><p>The freedom to redistribute copies so you can help others (freedom 2).</p></li>
+<li><p>The freedom to distribute copies of your modified versions to others (freedom 3). By doing this you can give the whole community a chance to benefit from your changes. Access to the source code is a precondition for this.</p></li>
+</ul>
+<p>Below is how each of these freedoms might map to an AI model:</p>
+<p><em>The freedom to run the program as you wish, for any purpose</em></p>
+<p>This is a given in open source and isn’t really specific to AI. I will point out that there have been various recent calls to try and water down norms around freedom to use AI for any purpose<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a><sup>,</sup><a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, as well as suggestions that copyright is a poor choice for enforcing limits on use<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. Additionally, an important purpose of running an AI model is to understand how it works (in keeping with freedom 1 below), for example by running it on a test set, or by looking at intermediate outputs or gradients within the model. Another related purpose would be attempts to intentionally cause the model to perform improperly, to “jailbreak” the model and circumvent any built in guardrails, or other security related interrogations.</p>
+<p><em><u>The freedom to study how the program works, and change it so it does your computing as you wish</u></em></p>
+<p>In software, this requires sharing the source code. AI combines the following (potentially non-exhaustive) list of elements:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Model Element</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Data</td>
+<td>The raw dataset used to train the model. In some cases this could include synthetic data, possibly generated by another AI model, in which case trying to understand it could be turtles all the way down. There may also be some metadata, for example vocabulary data in a language model.</td>
+</tr>
+<tr class="even">
+<td>Preprocessing</td>
+<td>Any manipulations, filters, or other steps applied to the raw data before it’s used to train a model.</td>
+</tr>
+<tr class="odd">
+<td>Training code</td>
+<td>The actual computer program that loads in the data and uses it to adjust the model weights in order to create the final model.</td>
+</tr>
+<tr class="even">
+<td>Inference code</td>
+<td>The computer program that uses the trained model weights, possibly along with other information, to generate model outputs. This is the “AI” that most end users use (although probably embedded into another computer program).</td>
+</tr>
+<tr class="odd">
+<td>Initial weights</td>
+<td><p>It is very common to start training a model with the initial weights of a previously trained model.</p>
+<p>Models are sometimes trained from scratch, in which case the weights start with a random initialization which would have to be shared (possibly as a RNG seed).</p></td>
+</tr>
+<tr class="even">
+<td>Hyperparameters or state information, other reproducibility</td>
+<td>Information that would be necessary to reproduce (to within some measure of closeness) the model and/or inference. I would divide this into coarse hyperparameters (batch size, learning rate, etc.) and strict reproducibility information, which would have to include all random number generator seeds, thread execution information<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>, which normally may not exist, etc.</td>
+</tr>
+<tr class="odd">
+<td>Context information</td>
+<td>Especially in generative AI there may be additional information needed to reproduce a result, such as prompts.</td>
+</tr>
+</tbody>
+</table>
+<p>First off, a big software project could be just as or more complex than this, so I don’t want to pretend that AI has some special never-before-encountered complexity. But there are a few key differences:</p>
+<p><strong>A practitioner with all the information above could still not tell you how the AI works</strong></p>
+<p>If you have un-obfuscated program source code, you can generally figure out what a program does by looking at it or tracing through it. An AI model has built up an effectively intractable mathematical function through its training, for which understanding how the “recipe” for building the model (the training protocol and data) does not translate into understanding how it makes its predictions. Models are generally evaluated by testing their outputs on example data, not by inspecting the training data. This doesn’t mean the data is not useful in studying how the program works. But it provides much more limited additional information compared to having a standard computer program’s source code.</p>
+<p><strong>Source code plus model weights are enough to build a functional understanding of the model</strong></p>
+<p>With a trained model, we have a function that we can interrogate at will, and as such can study how it works. For example we can feed it input for which we know the desired output and compare to the model results. This is already how models are evaluated. Additionally, there are more sophisticated methods of examining the operation of the model, such as feature attribution or sample attribution that can give deeper insight into how it works.</p>
+<p>From a purely technical standpoint, model weights plus source code are far easier to understand functionally than the machine code of a computer program. The weights are just coefficients – the actual computation is visible in the model source code. So there is not the same question of what the code is actually doing that there would be if a standard program was provided without the source code. Users of an AI model can look at the code and verify that a transformer is a transformer, a convolutional layer does what it says it does, etc.</p>
+<p>Absent the training data, there is a chance of an adversarial model that has been trained to behave nicely under testing but misbehave for some specific situation<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>. I would first argue that every model can behave this way whether trained explicitly to or not, and evaluation plus guardrails in production should take the possibility of malfunction into account. For applications where absolute trust is needed, it may be worth training a model from scratch on known data, although it’s probably better not to use AI for anything that could be compromised this way<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>.</p>
+<p>There are also the practical considerations of sharing training data. Almost all big models are trained on potentially copyrighted data that would not be possible to share. When data is shared it is very often as links to the websites it came from, which may make exact reproduction possible as sites move or go offline.</p>
+<p>There is certainly an ideal “maximally open” AI model in which all data and reproducibility information is shared. Practically this is not likely to happen for any of the large scale datasets that are used to train state-of-the-art generative models. And training data is arguably the least useful part of the model specification for verifying how it works. (Though it’s great for making claims alleging copyright violation or for hinting at potential model problems – such as bias – that would need to be uncovered functionally anyway and not by looking at the data. Cynically I think the importance of seeing the training data gets overblown because it’s easy to pick on, even though in modern giant models any individual piece of training data has an infinitesimal impact).</p>
+<p>I’d suggest that “Freedom 1” can be respected (to the extent possible in what is always a black-box system) by sharing the model weights and training/inference code and anything else that’s needed to use the model for inference as intended and to properly update the weights from a new training example (all of which implies the ability to access gradients and other intermediate information that could be used to get additional insight into the model). That may not seem entirely satisfactory, but currently AI models are never entirely satisfactory understandability-wise, and the training data won’t significantly help with this and is not possible to produce for most large models.</p>
+<p><em><u>The freedom to redistribute copies so you can help others</u></em></p>
+<p>This is another standard freedom that is not specific to AI.</p>
+<p><em><u>The freedom to distribute copies of your modified versions to others</u></em></p>
+<p>For software, as the FSF states, access to the source code is a precondition to being able to distribute modified versions. For and AI model, the original training data is not required to create a modified version which to me lends support to the idea that training data is not really analogous to source code and isn’t essential to AI model freedom.</p>
+<p>Below is a list of some of the ways that a model can be modified. Not all of these necessarily count as strict derivatives of an AI model, which I’ll discuss below.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Modification</th>
+<th>Description</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Fine tuning</td>
+<td><p>All layers,</p>
+<p>Head only,</p>
+<p>Use as initialization</p></td>
+<td><p>Meant here to capture any method that takes an existing model and further trains it on new data either to improve performance, adapt to a different task, or other use. It is possible to fine tune all parameters, or just some layers, such as the output head.</p>
+<p>Fine tuning can be used to refine a model, such as instruction tuning a language model, or to completely repurpose the model, such as turning a language model into a sentiment classifier. It’s also possible to use model weights as an initialization that effectively gets trained away. For example starting with Image-Net weights to train a classifier.</p></td>
+</tr>
+<tr class="even">
+<td>Generate training data</td>
+<td>Generative models can be used to output datasets that are subsequently used to train a new model. I could use Stable Diffusion to create pictures of dogs and cats in various situations and then use these to train a dog / cat classifier.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Use part of it (like embeddings)</td>
+<td>A model has many layers and generates an intermediate value at each. Some part of the model could be removed and used in another system. A common example is to use a model to generate embeddings (an internal data representation) that get used for some other task (like indexing in a vector database) or to re-use the decoder of a model with an encoder-decoder architecture.</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Change the model code</td>
+<td>The code could be changed to use the model differently, for example changing hyperparameters, sampling strategy, scaling, or other non-learned (not stored in weights) aspects of the overall AI model.</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Add context or prompts</td>
+<td>For generative models, the prompting information (context) could be changed or added to. Prompts are an integral part of many models and not obviously just an “input” .</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Making and distributing a modified version primarily has implications for copyleft and what obligations are attached to the distribution of the modified version. Normally copyleft licenses like GPL require that modifications to source code are shared. Given the different ways in which a model can be modified, a license would need to consider which modifications require “sharing alike” of the modified version.</p>
+<p>It will ultimately depend on the goals of the copyright holder what they want shared. Prompts (even if it’s not great coding practice) are often now an integral part of source code and might have to be shared on that basis<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>. And sharing those essential to the working of the model<a href="#fn9" class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a> would certainly be in the spirit of software freedom. However one wouldn’t expect that every model input would need to be shared, nor possibly custom generic prompts such as those that may contain proprietary information for a specific use case.</p>
+<p>For fine-tuning, I see a practical distinction between fine tunes from a foundation model to a specific model vs. from to a new foundation model. For example, Vicuna<a href="#fn10" class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a> is a fine-tuned version of LLaMA that has had additional training to create a chat-like functionality. Vicuna is a broadly capable foundation model, just like its progenitor. On the other hand, a company might want to fine tune a language model to perform some much more specific classification, say for routing incoming support requests. For that task, they could investigate using an LLM directly and prompting it with the request and a list of departments that might handle it, or they could replace the model’s prediction head with a classifier and fine-tune part of all of the weights on some examples. The result would be a system that is probably useless outside of its specific application and that is trained on proprietary data.</p>
+<p>If you consider the goals of copyleft, including giving back, and preventing dominance of closed (non-free) options, I think there is a much stronger case that a foundational derivative model like Vicuna should be re-shared, vs a narrow application specific model. The narrow model doesn’t help anyone else, using copyleft as a starting point wouldn’t work if the model needs confidential elements to be built, and it may be possible (depending on the license) to circumvent re-sharing by choosing to prompt the model instead of fine tune it anyway. This all suggests that when introducing clauses about re-sharing, it is worth considering the different kinds of derivatives that are possible and only protecting those, like foundation models, whose redistribution would be in line with the intent of the licensor.</p>
+<p>Using the model output to train a new model is not the same as creating a modified version of the model. It strikes me more as being like training a model on copyrighted data, which I generally see no problem with<a href="#fn11" class="footnote-ref" id="fnref11" role="doc-noteref"><sup>11</sup></a>, so it’s not even clear that a license granted under copyright could govern that. Like the discussion of fine-tuning, if model output was used to train a narrow model, I see little value in trying to enforce anything on the distributor of that model. Though it could be possible to substantially copy part of the functionality of a model by using it to generate a broad range of training data to train a subsequent model (or more directly with methods like distillation<a href="#fn12" class="footnote-ref" id="fnref12" role="doc-noteref"><sup>12</sup></a>). Doing this is closer to wholesale copying and so it is more reasonable to assume protection under copyright, and to attach share-alike responsibilities.</p>
+<p>I can’t weigh in on the current legal aspects here, and I don’t mean to give an exhaustive list of all the derivatives that are possible. What I do want to suggest is that they are not all equal in spirit or in community value and that trying to capture anything that could be construed as a derivative under copyleft may be too broad. The distinction, although blurry, between narrow and foundational models is an important concept on which to base protections.</p>
+<p>AI models are not the same as software. A good agreed definition of what it means to freely share a model is going to be helpful amid corporate attempts to water down the definition of “open”. And the freedoms that apply to free software provide a longstanding conceptual definition of what it means for a technology to be free. Understanding the different aspects of AI, particularly what makes up a model (data, source code, weights, etc.) and the relative importance of these in exercising freedoms, and the kinds of modifications that can be made to an AI model can help craft appropriate definitions and licenses.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a href="https://www.gnu.org/philosophy/free-sw.html.en">https://www.gnu.org/philosophy/free-sw.html.en</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><a href="https://www.alessiofanelli.com/blog/llama2-isnt-open-source">https://www.alessiofanelli.com/blog/llama2-isnt-open-source</a> ‘LLaMA2 isn't "Open Source" - and why it doesn't matter’<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>For example Meta taking about an “open approach” while casually referring to their limited LLaMA-2 license as open source<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>https://katedowninglaw.com/2023/07/13/ai-licensing-cant-balance-open-with-responsible/<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>Models are trained in parallel, the exact result will depend on the order in which the parallel steps are executed which is subject to various randomness that is normally not accounted for. Some frameworks have setting that will allow for strict reproducibility but they are not normally used.<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p><a href="https://blog.mithrilsecurity.io/poisongpt-how-we-hid-a-lobotomized-llm-on-hugging-face-to-spread-fake-news/">https://blog.mithrilsecurity.io/poisongpt-how-we-hid-a-lobotomized-llm-on-hugging-face-to-spread-fake-news/</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7" role="doc-endnote"><p>This might be a good test for an accountable deployment of AI: if my model was adversarially compromised, would the system that uses it still fail gracefully?<a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8" role="doc-endnote"><p>An example from Langchain: https://github.com/langchain-ai/langchain/blob/master/libs/langchain/langchain/chains/retrieval_qa/prompt.py<a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9" role="doc-endnote"><p>An example from Meta’s llama https://github.com/facebookresearch/llama/blob/main/llama/generation.py#L212<a href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10" role="doc-endnote"><p>https://lmsys.org/blog/2023-03-30-vicuna/<a href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11" role="doc-endnote"><p>http://marble.onl/posts/general_technology_doesnt_violate_copyright.html<a href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12" role="doc-endnote"><p>https://arxiv.org/abs/1503.02531<a href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

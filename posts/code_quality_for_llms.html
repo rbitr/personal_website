@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Managing LLM application performance through code standards</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<h2>Managing LLM application performance through code standards</h2>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@kereva.io<br>April 1, 2025</a></p>
+<p><em>Code that implements LLM calls needs more attention. Here we
+discuss the neglected relationship between LLM application performance
+and security, and the underlying code.</em></p>
+<p>Anthropic defines LL workflows and agents as<a href="#fn1"
+class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>:</p>
+<ul class="incremental">
+<li><p><strong>Workflows</strong> are systems where LLMs and tools are
+orchestrated through predefined code paths.</p></li>
+<li><p><strong>Agents</strong>, on the other hand, are systems where
+LLMs dynamically direct their own processes and tool usage, maintaining
+control over how they accomplish tasks.</p></li>
+</ul>
+<p>Any non-trivial LLM application falls into one of these categories;
+that is, they combine LLMs with code and data flow to do some useful
+task. Despite being but one of the components, the LLM gets outsized
+attention when evaluating LLM apps. Code quality plays an
+under-appreciated role in their security and performance.</p>
+<p>We are building Kereva<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>, a code scanning tool for LLM apps
+that allows policies or standards related to code to be enforced, in
+order to mitigate security or performance issues that stem from the
+code, rather than the LLM itself. The purpose of this article is to
+discuss the kinds of policies that are important, and how they impact
+system performance.</p>
+<p>Policies will depend on the application and the organization. But the
+considerations can be grouped according to the prompts, data, and
+outputs, as described below.</p>
+<p><strong>Prompts:</strong> We can consider prompts to be the
+“instruction” text passed to the LLM. In application code, they are
+often included as static text, with placeholders for data that get added
+at run-time. For example, a simplified RAG (question answering based on
+context retrieved from a database) prompt might look like</p>
+<span style="font-family: monospace;">
+<p>Please answer the question below based on the provided context:<br>
+&lt;question&gt;<br>
+{question}<br>
+&lt;/question&gt;<br>
+&lt;context&gt;<br>
+{context}<br>
+&lt;/context&gt;<br></p>
+</span>
+<p>We have an instruction (answer the question) and then placeholders
+consisting of XML tags enclosing variables in curly braces. When the
+application is run, a question would be sourced from the user, and
+relevant context from a database, and these combined into the text sent
+to the LLM.</p>
+<p>OpenAI and Anthropic publish a model specification<a href="#fn3"
+class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> and
+prompting guidelines<a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a> respectively that provide
+information on how prompts should be construed for their models.
+Policies can be designed to confirm that prompts are written in
+accordance with these guidelines. For example, OpenAI mentions that
+plaintext in quotation marks, YAML, JSON, XML, or <span style="font-family: monospace;">untrusted_text</span> blocks are all treated as un-trusted. Anthropic states that inputs
+should be enclosed in XML tags. These naturally give rise to policies we
+can scan for.</p>
+<p>APIs often take care of prompt formatting such as adding tags to
+denote user and system prompts, but some local model frameworks like
+HuggingFace allow this formatting to be applied programmatically. Again,
+checking that the correct formatting is being applied can be enforced in
+a code scan.</p>
+<p>Prompts can also negatively impact model behavior. For example, a
+recent study identified prompt characteristics that could result in
+bias<a href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a> in LLM output. Prompts that are
+vague or under-specified can also lead to over-reliance on the model’s
+“judgement” and not reflect user intent. For example, asking a LLM to
+pick the “best” candidate for a job, without specifying criteria,
+exposes the selection to any biases or preconceptions built into the
+model.</p>
+<p>Organizations may also have specific prompting practices related to
+system prompts, included information, rules for the LLM to follow, etc.
+that can be enforced.</p>
+<p><strong>Data:</strong> LLM apps will often combine user input with
+other data such as search results in prompts. This data may be trusted
+(for example from a pre-vetted database, or from users with the same
+privilege level) or untrusted (such as web data, documents from
+un-trusted users, etc.). An exploit discovered in Slack’s AI features
+last year consisted of a user without privileges (for example not part
+of a private channel) uploading a document to a public channel that
+contained a prompt injection attack<a href="#fn6" class="footnote-ref"
+id="fnref6" role="doc-noteref"><sup>6</sup></a>. When a privileged user
+viewed the malicious document, the hijacked LLM would summarize
+privileged information and then exfiltrate it, encoded in base64 through
+hyperlink rendered in markdown to look benign. The prompt itself is
+often not trusted in public facing systems, where prompt injection could
+lead to embarrassing behavior or sharing of unwanted information.</p>
+<p>Steps to prevent such attacks can include sanitization of inputs.
+Organizations may want to enforce specific sanitization requirements,
+such as using packages like Guardrails<a href="#fn7"
+class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>.
+Compliance with a sanitization policy can be checked at the code
+level.</p>
+<p>Data flow also has a major impact on system performance
+characteristics, such as answer correctness or hallucination. When an
+LLM is using contextual data to make a response, it’s important that
+this data is complete, relevant, and unambiguous. While not all of these
+aspects stem from code quality, some standards can be enforced through
+code scans. Examples include the “chunking” strategy – how longer data
+is divided up to be fed to a prompt, and the content presented to the
+LLM (such as including context like document and section titles).</p>
+<p><strong>Output:</strong> After the LLM provides a response, the
+handling of this output affects security and performance. Enforcing
+output structure and limits with in-built API functionality or tools
+like Outlines<a href="#fn8" class="footnote-ref" id="fnref8"
+role="doc-noteref"><sup>8</sup></a> can be an important first step. For
+example, using enums (lists of allowable values), types, and range
+limits to constrain allowable output can improve both security and
+performance.</p>
+<p>When LLM outputs are used to take further programmatic steps, agency
+is also important. OWASP defines excessive agency as a “vulnerability
+that enables damaging actions to be performed in response to unexpected,
+ambiguous or manipulated outputs from an LLM…”<a href="#fn9"
+class="footnote-ref" id="fnref9" role="doc-noteref"><sup>9</sup></a>
+This can happen when function calls or code execution are based on LLM
+outputs. Organizations may want to ensure that no LLM output is directly
+executed, such as through Python’s <span style="font-family: monospace;">exec</span> command or a shell. They may
+also wish to either scan for potentially dangerous functions that can be
+called on LLM output, or limit to a known list. For example, an LLM
+agent that executes shell commands as part of its output could be
+prevented from using <span style="font-family: monospace;">dd</span> or <span style="font-family: monospace;">rm</span> or allowed only to use <span style="font-family: monospace;">ls</span> or <span style="font-family: monospace;">grep</span>
+if these were deemed harmless.</p>
+<p>Output rendering is also important<a href="#fn10"
+class="footnote-ref" id="fnref10" role="doc-noteref"><sup>10</sup></a>.
+Some attacks use markdown rendering to conceal harmful hyperlinks.
+Displays that render “social previews” – those links that contain a
+little picture and some text that appear when you post a url in Slack or
+Messenger – will automatically send a request to an outside website that
+can be a data exfiltration vector. Organizations may want to limit how
+output is processed or rendered to only “safe” methods, possibly
+disallowing hyperlinks altogether.</p>
+<p>Finally, output sanitization, for example checking for commercially
+inappropriate outputs, along similar lines to input sanitization, may
+also be an appropriate policy. Especially concerning are completely
+unsanitized paths from an untrusted input to an output (either presented
+to a user or prompting an action). With current LLMs, all of which are
+susceptible to jailbreaks, such paths can allow an attacker to
+manipulate the output as they want.</p>
+<p>As LLMs have improved over the past few years, their performance has
+received the most attention in relation to validating the behavior of
+LLM apps. As we’ve seen, the code quality is also extremely important.
+Organizations building or using LLM apps should be aware of the
+relationship between code features and application performance and
+security, and work to define and enforce policies to ensure their apps
+are built responsibly. The considerations given here are just examples.
+It’s worth reviewing organizational security and performance
+requirements, understanding the specific features of the code that may
+have an impact, and enforcing appropriate policies.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a
+href="https://www.anthropic.com/engineering/building-effective-agents">https://www.anthropic.com/engineering/building-effective-agents</a>
+(Dec 19, 2024)<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a
+href="https://www.kereva.io/">https://www.kereva.io/</a><a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a
+href="https://model-spec.openai.com/2025-02-12.html">https://model-spec.openai.com/2025-02-12.html</a><a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><a
+href="https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview">https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview</a><a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><a
+href="https://arxiv.org/abs/2501.12521">https://arxiv.org/abs/2501.12521</a><a
+href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p><a
+href="https://promptarmor.substack.com/p/data-exfiltration-from-slack-ai-via">https://promptarmor.substack.com/p/data-exfiltration-from-slack-ai-via</a><a
+href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7"><p><a
+href="https://github.com/guardrails-ai/guardrails">https://github.com/guardrails-ai/guardrails</a><a
+href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p><a
+href="https://github.com/dottxt-ai/outlines">https://github.com/dottxt-ai/outlines</a><a
+href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p><a
+href="https://genai.owasp.org/llmrisk/llm062025-excessive-agency/">https://genai.owasp.org/llmrisk/llm062025-excessive-agency/</a><a
+href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p><a
+href="https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/">https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/</a><a
+href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
