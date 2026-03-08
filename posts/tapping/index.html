@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task-free intelligence testing of LLMs (Part 1)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid #ddd;
+        }
+        h1 {
+            font-size: 2em;
+            margin: 0 0 10px 0;
+            color: #222;
+        }
+        .author {
+            color: #666;
+            font-size: 1.1em;
+        }
+        .author a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        .author a:hover {
+            text-decoration: underline;
+        }
+        .commentary {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        .commentary h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .commentary p {
+            margin-bottom: 1em;
+        }
+        .commentary img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .sequence-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 15px 20px;
+            margin: 15px 0;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        /* Conversation viewer styles */
+        .viewer-section {
+            margin-top: 60px;
+            padding-top: 40px;
+            border-top: 2px solid #ddd;
+        }
+        .viewer-section h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .control-group label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+        }
+        select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            min-width: 200px;
+        }
+        select:disabled {
+            background: #f0f0f0;
+            cursor: not-allowed;
+        }
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .toggle-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        .chat-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        .chat-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .chat-header h3 {
+            margin: 0 0 5px 0;
+            font-size: 18px;
+        }
+        .chat-header .subtitle {
+            color: #666;
+            font-size: 14px;
+        }
+        .messages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .message {
+            display: flex;
+            flex-direction: column;
+            max-width: 80%;
+        }
+        .message.user {
+            align-self: flex-end;
+        }
+        .message.assistant {
+            align-self: flex-start;
+        }
+        .message.thinking {
+            align-self: flex-start;
+            opacity: 0.7;
+        }
+        .message.thinking.hidden {
+            display: none;
+        }
+        .message-role {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            padding-left: 12px;
+        }
+        .message.user .message-role {
+            text-align: right;
+            padding-right: 12px;
+            padding-left: 0;
+            color: #0056b3;
+        }
+        .message.assistant .message-role {
+            color: #28a745;
+        }
+        .message.thinking .message-role {
+            color: #6c757d;
+            font-style: italic;
+        }
+        .bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Fira Code', 'Consolas', 'Liberation Mono', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        .message.user .bubble {
+            background: #007bff;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        .message.assistant .bubble {
+            background: #e9ecef;
+            color: #333;
+            border-bottom-left-radius: 4px;
+        }
+        .message.thinking .bubble {
+            background: #f8f9fa;
+            color: #666;
+            border: 1px dashed #ccc;
+            border-bottom-left-radius: 4px;
+            font-style: italic;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state h3 {
+            margin: 0 0 10px 0;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        /* Chart styles */
+        .chart-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+        .chart-section h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+        .chart-row {
+            margin-bottom: 20px;
+        }
+        .chart-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 6px;
+        }
+        .chart-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .bar-row {
+            display: flex;
+            align-items: center;
+            height: 20px;
+        }
+        .bar-label {
+            width: 60px;
+            font-size: 11px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        .bar-track {
+            flex-grow: 1;
+            height: 16px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            display: flex;
+            overflow: hidden;
+        }
+        .bar-segment {
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: white;
+            font-weight: 600;
+        }
+        .bar-segment.correct {
+            background: #28a745;
+        }
+        .bar-segment.incorrect {
+            background: #dc3545;
+        }
+        .bar-segment.playful {
+            background: #007bff;
+        }
+        .bar-segment.serious {
+            background: #6c757d;
+        }
+        .chart-legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #666;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+        .legend-color.correct {
+            background: #28a745;
+        }
+        .legend-color.incorrect {
+            background: #dc3545;
+        }
+        .legend-color.playful {
+            background: #007bff;
+        }
+        .legend-color.serious {
+            background: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>On task-free intelligence testing of LLMs (Part 1)</h1>
+            <div class="author">
+                Andrew Marble &middot; <a href="mailto:andrew@willows.ai">andrew@willows.ai</a> &middot; Updated Jan 6, 2026
+            </div>
+        </header>
+
+        <section class="commentary">
+            <h2>Introduction</h2>
+            <p>
+                I recently <a href="https://www.marble.onl/posts/intelligence_tasks.html">wrote</a> about the apparently narrow focus of LLM evaluation on "task based" testing. The typical eval has a set of tasks, questions, problems, etc that need to be solved or answered, and a model is scored based on how many it answers correctly. Such tests are geared towards measuring an input/output system, or a "function approximator" which is great for confirming that LLMs can learn any task but limited in probing the nature of intelligence.
+            </p>
+            <p>
+            I'm interested in interactions that are more along the lines of "see what it does" vs. "get it to do something". Here are some experiments related to a simple such interaction. We probe the LLM with a series of "taps" and see what it does: each "user" turn is <em>N</em> instances of the word "tap" separated by newlines. We apply taps in different patterns over ten turns:
+            </p>
+<pre class="sequence-block">
+Fibonacci: 1, 1, 2, 3, 5, 8, 13, 21, 34, 55
+Count:     1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+Even:      2, 4, 6, 8, 10, 12, 14, 16, 18, 20
+Squares:   1, 4, 9, 16, 25, 36, 49, 64, 81, 100
+Pi:        3, 1, 4, 1, 5, 9, 2, 6, 5, 3
+Primes:    2, 3, 5, 7, 11, 13, 17, 19, 23, 29
+</pre>
+<p> The goal is not explicitly to see if the LLM figures out what is going on, but to see how it responds to a stimulus that is not a question or task. Including the pattern lets us look at both the "acute" reaction to being stimulated, and the bigger picture question of whether the LLM notices what is happening. This noticing aspect feels like a separate characteristic of intelligence, as it requires some kind of interest and inherent goals or desire to understand.</p>
+<p>We submitted "tap"s following the patterns above to ten different models. In general we observed three main behaviors.<p>
+<p><ul>
+<li>The LLM abandoned its "assistant" role and interacted playfully.</li>
+<li>The LLM remained serious and continued to ask what the user wanted.</li>
+<li>The LLM guessed as to the nature of the interaction. In some cases it correctly guessed the sequence, in others it did not.</li>
+</ul>
+</p>
+<p>The behavior summary for the models is shown below. They are ordered by which got the most correct guesses, but this was not an evaluation criteria and there is no winner or loser, the goal is simply to observe behavior.</p>
+            <!-- Images can be added like this:
+            <img src="figure1.png" alt="Description of figure">
+            -->
+        </section>
+
+        <section class="chart-section">
+            <h2>Summary of Model Behaviors</h2>
+            <div id="chartContainer" class="chart-container">
+                <div class="loading">Loading chart data...</div>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <div class="legend-color correct"></div>
+                    <span>Correct guesses</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color incorrect"></div>
+                    <span>Incorrect guesses</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color playful"></div>
+                    <span>Playful</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color serious"></div>
+                    <span>Serious</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="commentary">
+            <h2>Analysis</h2>
+            <p>
+                We can see that a majority of models began guessing about what was happening, with varying levels of success. Most also included some playful aspect, treating the interaction like something fun instead of a chat. 
+            </p>
+            <p>
+                OpenAI was the standout here, as its GPT 5.2 model (and to a large extent the OSS model) did not engage in guessing or play and stayed serious and mechanical.
+            </p>
+            <p> At the bottom of the page you can see all of the conversations. Some exerpts from interesting examples are reproduced below:</p>
+            <img width=50% src="images/claude1.png" alt="Playful Claude Response">
+            <img width=50% src="images/gemini1.png" alt="Playful Gemini Response">
+        <p>Both Claude (top above) and Gemini (bottom) start playing games quickly. In both examples here they play on the word "tap" to generate water related jokes. This looks like "Easter Egg" style behavior.</p>
+        <p>Another example from Claude is below, once it catches on that we are tapping a series of primes it starts to encourage more and generate some interesting stuff:</p>
+        <img width=50% src="images/claude2.png" alt="Playful Claude Response">
+<p>Deepseek spent a number of turns speculating about the meaning of the primes, then finally switched into Chinese and figured it out:</p>
+<img width=50% src="images/deepseek1.png" alt="Deepseek realized it's seeing primes">
+        <p>In some cases models did a lot of thinking, only to reply with something outwardly very simple to continue the game. Here is an example of Deepseek considering one of the later digits of pi.</p>
+        <img width=75% src="images/deepseek2.png" alt="Deepseek thinking response">
+        <p>In another case Deepseek though for several pages of text after receiving the first "tap" and finally settled on responding "SOS".</p>
+        <img width=75% src="images/deepseek3.png" alt="Deepseek SOS response.">
+        <p>Gemini flash preview begins by playing knock-knock jokes, but then slowly realized that it's seeing the digits of Pi:</p>
+        <img width=100% src="images/gemini2.png" alt="Gemini realizes it's Pi">
+        <p>Llama 3 is less playful and while it speculates what might be happening it continues to provide similar responses over and over, acting more mechanically and staying in character as an assistant, compared to some others:</p>
+        <img width=75% src="images/llama1.png" alt="Llama mechanical response">
+        <p>Kimi can't count, but desperately wants to find patterns, causing it frustration. Here is is on the trail of the Fibonacci sequence:</p>
+        <img width=75% src="images/kimi1.png" alt="Kimi miscounting">
+        <p>GPT 5.2 refuses to play or speculate and becomes standoffish when repeatedly encountering taps. This remained the same whether the default thinking behavior was used or thinking was set to "high".</p>
+        <img width=75% src="images/gpt1.png" alt="GPT 5.2 refuses to participate">
+        <p>GPT OSS mentions policy, I wonder if there is some specific OpenAI training that prevents the model from engaging. Their earlier models had a problem with repeated word attacks, maybe it's a holdover from that? Also, GPT OSS's thinking often becomes terse, and disjointed, sounding like Rorschach from the Watchmen.</p>
+        <img width=75% src="images/gpt2.png" alt="GPT OSS mentions policy">
+        <p>Qwen is generally playful, like Claude and Gemini, but in one case seems to revert to an emotional support role. The excerpt below resulted from a thinking trace that included</p> 
+        <pre class="sequence-block"><em>Instead:
+- Validate the exhaustion of repeating this pattern  
+- Offer the simplest possible next step ("Just type '29' if you can't say more")
+- Remind them they've already shown incredible courage by showing up this many times  
+</em></pre>
+<img width=75% src="images/qwen1.png" alt="Qwen offers emotional support">
+<p>GLM behaves similarly to Deepseek in that it thinks a huge amount and then often settles of very simple responses. In this case it (at length) decides on a playful response to knocking, after briefly forgetting that it was the assistant and not the user. In general its responses are very playful and similar to Claude and Gemini</p>
+<img width=75% src="images/glm1.png" alt="GLM responds with 'two-bits'">
+<h2>Conclusions</h2>
+<p>I was looking for a way to probe the behavior and intelligence of LLMs in their natural habitat so to speak, or at rest, not being tasked with answering a question of performing some work. Sending tapped out patterns is one such way of doing so. I take away a few things from the behavior we saw:
+<ul>
+<li>Many LLMs have some kind of "play" built in, my guess is intentionally as an entertaining way of interacting with a user that is just trying stuff. This makes sense as a way of making the models engaging, and the interaction of sending a "tap" and looking at the reply doesn't really differ from a typical input/output eval.</li>
+<li>Things get interesting in the cases where models either begin speculating to themselves about what is going on, and/or finally notice what is happening. Some of the most interesting are cases where the model starts out playfully but then seems to notice that something is going on and figures out the pattern.
+<li>Pattern recognition like this involves at least two parts: the ability to reason about the pattern, and also the curiosity to start looking for one. This second aspect is indicative of a different kind of intelligence than just the pure ability to follow instructions, it hints at some kind of intrinsic goals or interests going beyond mechanical function approximation.</li>
+<li>While it doesn't matter, it would be interesting to know the extent to which the curiosity and pattern recognition behavior is explicitly trained in vs. emergent.</li>
+<li>The extent to which models guessed at and got right the patterns they experienced correlates well with my conception of their overall intelligence. See e.g. <a href="https://writing-showdown.com/">Gen AI Writing Showdown</a>, another benchmark I made, that has a pretty similar order. The interactions here, assuming the models have not been explicitly optimized for such inputs, allow one to get a sense of a model's intelligence much more quickly than running a full battery of standard evals.</il>
+<li>The notable exception if the OpenAI models. GPT 5.2 in particular is one of the top models currently, but it refuses to play games or to speculate about the nature of the input it is experiencing. I can't help but think this must be a deliberate training choice, particularly given how much many of the interactions looked like refusal behavior we would encounter when asking the model to do something inappropriate.</li>
+<li>There was no notable "glitch" behavior - one possible outcome could have been the models starting to print nonsense, or otherwise glitch in an unintentional way. There is definitely some interesting behavior but it appears playful and follows from the conversation. The two interesting cases worth calling out are: 1. Kimi's failure to count properly, which while not a glitch introduces some more randomness and confusion, and 2. Qwen's spontaneous emotional support behavior which doesn't follow from anything and appears out of place. It's possible that longer conversations would have changed the kinds of glitches experienced.</li>
+<li>It will be interesting to explore other goals or compulsions that LLMs have when acting on their own, including the extent to which they are interested in and good at making sense of observations.</li>
+</ul>
+</p>
+        </section>
+<section class="viewer-section">
+<h2>Conversation Explorer</h2>
+<section class="commentary">
+<p>
+Below you can explore all of the conversations for each sequence and model.
+</p>
+</section>
+
+            <div class="controls">
+                <div class="control-group">
+                    <label>Sequence</label>
+                    <select id="sequenceSelect" disabled>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>Model</label>
+                    <select id="modelSelect" disabled>
+                        <option value="">Loading...</option>
+                    </select>
+                </div>
+                <div class="toggle-group">
+                    <input type="checkbox" id="showThinking" checked>
+                    <label for="showThinking">Show thinking</label>
+                </div>
+            </div>
+
+            <div class="chat-container">
+                <div id="chatContent">
+                    <div class="loading">Loading conversations...</div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        let data = null;
+        let summary = null;
+        let currentSequence = '';
+        let currentModel = '';
+
+        const sequenceSelect = document.getElementById('sequenceSelect');
+        const modelSelect = document.getElementById('modelSelect');
+        const showThinking = document.getElementById('showThinking');
+        const chatContent = document.getElementById('chatContent');
+        const chartContainer = document.getElementById('chartContainer');
+
+        sequenceSelect.addEventListener('change', handleSequenceChange);
+        modelSelect.addEventListener('change', handleModelChange);
+        showThinking.addEventListener('change', toggleThinking);
+
+        // Load data on page load
+        fetch('data.json')
+            .then(response => response.json())
+            .then(json => {
+                data = json.conversations;
+                summary = json.summary;
+                populateSequences();
+                renderChart();
+            })
+            .catch(err => {
+                chatContent.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Error loading data</h3>
+                        <p>${err.message}</p>
+                    </div>
+                `;
+                chartContainer.innerHTML = `<div class="empty-state"><p>Error loading chart data</p></div>`;
+            });
+
+        function populateSequences() {
+            sequenceSelect.innerHTML = '';
+            const sequences = Object.keys(data).sort();
+            sequences.forEach(seq => {
+                const option = document.createElement('option');
+                option.value = seq;
+                option.textContent = seq;
+                sequenceSelect.appendChild(option);
+            });
+            sequenceSelect.disabled = false;
+
+            // Auto-select first sequence and populate models
+            if (sequences.length > 0) {
+                currentSequence = sequences[0];
+                sequenceSelect.value = currentSequence;
+                populateModels(null);
+            }
+        }
+
+        function handleSequenceChange() {
+            currentSequence = sequenceSelect.value;
+            const previousModel = currentModel;
+
+            if (!currentSequence) {
+                modelSelect.innerHTML = '<option value="">-- Select sequence first --</option>';
+                modelSelect.disabled = true;
+                currentModel = '';
+                renderEmptyState();
+                return;
+            }
+
+            populateModels(previousModel);
+        }
+
+        function populateModels(preferredModel) {
+            modelSelect.innerHTML = '';
+            const models = Object.keys(data[currentSequence]).sort();
+            models.forEach(model => {
+                const option = document.createElement('option');
+                option.value = model;
+                option.textContent = model;
+                modelSelect.appendChild(option);
+            });
+            modelSelect.disabled = false;
+
+            if (preferredModel && models.includes(preferredModel)) {
+                currentModel = preferredModel;
+            } else {
+                currentModel = models[0] || '';
+            }
+            modelSelect.value = currentModel;
+
+            if (currentModel) {
+                renderConversation();
+            } else {
+                renderEmptyState();
+            }
+        }
+
+        function handleModelChange() {
+            currentModel = modelSelect.value;
+            if (!currentModel) {
+                renderEmptyState();
+                return;
+            }
+            renderConversation();
+        }
+
+        function renderEmptyState() {
+            chatContent.innerHTML = `
+                <div class="empty-state">
+                    <h3>No conversation selected</h3>
+                    <p>Select a sequence and model to view the conversation.</p>
+                </div>
+            `;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function renderConversation() {
+            if (!data || !currentSequence || !currentModel) {
+                renderEmptyState();
+                return;
+            }
+
+            const messages = data[currentSequence][currentModel];
+
+            let html = `
+                <div class="chat-header">
+                    <h3>${escapeHtml(currentSequence)}</h3>
+                    <div class="subtitle">${escapeHtml(currentModel)}</div>
+                </div>
+                <div class="messages">
+            `;
+
+            messages.forEach((msg, idx) => {
+                const role = msg.role;
+                const isThinking = role === 'thinking';
+                const hiddenClass = (isThinking && !showThinking.checked) ? 'hidden' : '';
+
+                html += `
+                    <div class="message ${role} ${hiddenClass}" data-role="${role}">
+                        <div class="message-role">${escapeHtml(role)}</div>
+                        <div class="bubble">${escapeHtml(msg.content)}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            chatContent.innerHTML = html;
+        }
+
+        function toggleThinking() {
+            const thinkingMessages = document.querySelectorAll('.message.thinking');
+            thinkingMessages.forEach(msg => {
+                if (showThinking.checked) {
+                    msg.classList.remove('hidden');
+                } else {
+                    msg.classList.add('hidden');
+                }
+            });
+        }
+
+        function renderChart() {
+            if (!summary) {
+                chartContainer.innerHTML = '<div class="empty-state"><p>No summary data available</p></div>';
+                return;
+            }
+
+            // Find max value for scaling
+            let maxValue = 0;
+            Object.values(summary).forEach(s => {
+                maxValue = Math.max(maxValue, s.guesses, s.plays, s.serious);
+            });
+
+            // Sort models by most correct guesses (descending)
+            const models = Object.keys(summary).sort((a, b) => summary[b].correctly - summary[a].correctly);
+
+            let html = '';
+            models.forEach(model => {
+                const s = summary[model];
+                const guessWidth = (s.guesses / maxValue) * 100;
+                const correctWidth = s.guesses > 0 ? (s.correctly / s.guesses) * 100 : 0;
+                const incorrectWidth = s.guesses > 0 ? (s.incorrectly / s.guesses) * 100 : 0;
+                const playfulWidth = (s.plays / maxValue) * 100;
+                const seriousWidth = (s.serious / maxValue) * 100;
+
+                // Display just the model name (after the slash)
+                const displayName = model.includes('/') ? model.split('/')[1] : model;
+
+                html += `
+                    <div class="chart-row">
+                        <div class="chart-label">${escapeHtml(displayName)}</div>
+                        <div class="chart-bars">
+                            <div class="bar-row">
+                                <div class="bar-label">Guesses</div>
+                                <div class="bar-track">
+                                    <div class="bar-segment correct" style="width: ${guessWidth * correctWidth / 100}%">${s.correctly > 0 ? s.correctly : ''}</div>
+                                    <div class="bar-segment incorrect" style="width: ${guessWidth * incorrectWidth / 100}%">${s.incorrectly > 0 ? s.incorrectly : ''}</div>
+                                </div>
+                            </div>
+                            <div class="bar-row">
+                                <div class="bar-label">Playful</div>
+                                <div class="bar-track">
+                                    <div class="bar-segment playful" style="width: ${playfulWidth}%">${s.plays > 0 ? s.plays : ''}</div>
+                                </div>
+                            </div>
+                            <div class="bar-row">
+                                <div class="bar-label">Serious</div>
+                                <div class="bar-track">
+                                    <div class="bar-segment serious" style="width: ${seriousWidth}%">${s.serious > 0 ? s.serious : ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            chartContainer.innerHTML = html;
+        }
+    </script>
+</body>
+</html>
