@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Foundational AI models do not violate copyright</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2>Foundational AI models do not violate copyright</h2>
+<p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>July 18, 2023</a></p>
+<p>There’s a long list of “bad” (and often nebulous) things that could plausibly be done with AI – generate misinformation, be biased or perpetuate stereotypes, say something offensive, perpetrate scams at scale, etc. These potential “harms” have been used as an excuse by some to suggest enforcing limitations on the technology itself, either in its capabilities or its ownership (usually to the favor of those advocating the limitations). Recently a “potential” concern that’s been getting more advocacy is copyright<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. I want to focus on the contention, one of many listed in the lawsuits mentioned in the footnote article, that AI models violate copyright because it’s possible to get them to generate copyrighted content<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>While it’s possible to build an AI model that violates copyright, and it’s possible to use broadly capable foundation models like chatGPT to generate copyrighted content, neither means that the training or existence of the models themselves violates copyright. Rather, it comes down to the same idea as with the other potential misuses: just because a model can do something, doesn’t mean that’s what people are doing with it, and it’s inappropriate to penalize or limit technology just because it’s possible someone could do something bad with it.</p>
+<p>Someone with a broadly trained conversational AI could decide to violate copyright by using it as a tool to generate some offending content. Just like I could with a photocopier, a VCR, or my own memory. That doesn’t mean we need to limit what the model can do, any more than we need to limit what a VCR can copy. If I start a video bootleg operation, I’m liable for that. Not so for the VCR itself or its manufacturer<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. This is the same tired argument we’ve seen with things like BitTorrent, encryption or bitcoin where someone argues that the technology could be used for some nefarious purpose, so we need to limit its capabilities. In the context of modern AI, limiting broadly capable models in the name of copyright is no different than restricting Word or Photoshop to prevent you from typing or drawing something that’s copyrighted.</p>
+<p>Just to mention, it would be possible to build, say a GAN (a kind of image generating AI model) that only generates Mickey Mouse pictures. I think there’s a fair argument that such a model would violate copyright, because its only use is generating such content. Foundational models, by virtue of their broad understanding of the world, are able to generate copyrighted content, as well as inappropriate, sensitive, biased and other undesirable outputs. This in a sense is a necessary condition and a consequence of their having a broad understanding of the world. Trying to build in some kind of copyright protection mechanism would be as pointless and user-hostile as the stuff we saw the movie and record companies trying in the wake of Napster.</p>
+<p>A more sensible approach, whether to copyright or to other potential misuses of AI is to focus on regulating the use, where appropriate, rather than the capabilities of the technology itself. Parties who use AI to generate copyrighted content could be liable for infringement, same as those who use it to perpetrate some scam or to mistreat people algorithmically. In most cases, such misuses already are covered under various regulations as well as social norms. However, there may be value in better definitions of the distinction between foundational or broadly capable AI that has many non-infringing uses (like chatGPT), and a narrowly trained model who’s only purpose is some malfeasance<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>.</p>
+<p>The aim here is not to dismiss potential misuse of AI. The point is that trying to legislate limitations at the capability level is the wrong way of going about it, and we should be focusing on how people actually use it.</p>
+<p>Note added July 25 - here is another interesting related paper: P. Henderson, X. Li, D. Jurafsky, T. Hashimoto, M. A. Lemley, and P. Liang, “Foundation Models and Fair Use.” arXiv, Mar. 27, 2023. doi: 10.48550/arXiv.2303.15715.<a href="https://arxiv.org/abs/2303.15715">https://arxiv.org/abs/2303.15715</a></p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>https://www.theverge.com/2023/7/9/23788741/sarah-silverman-openai-meta-chatgpt-llama-copyright-infringement-chatbots-artificial-intelligence-ai<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>A distinct issue is the copyright of the AI model itself: <a href="http://marble.onl/posts/model_weight_copyrights.html">http://marble.onl/posts/model_weight_copyrights.html</a> The discussion here is about whether the model violates copyright on the training data.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>https://en.wikipedia.org/wiki/Sony_Corp._of_America_v._Universal_City_Studios,_Inc.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>As an aside, I think the foundational / narrow divide is a generally important concept when discussing IP in relation to AI. As another example, a foundational model derived from another – say Vicuna from LLaMA is clearly a derivative work. But a specialized narrow model, for example a binary image classifier fine-tuned from a model pretrained on Image-Net, might be considered differently.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

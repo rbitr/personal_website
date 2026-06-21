@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Red Teaming vs. Eliza</title>
+    <link rel="stylesheet" href="pandoc.css">
+</head>
+<body>
+    <h1>AI Red Teaming vs. Eliza</h1>
+    
+    <div class="author-info">
+        <p>Andrew Marble</p>
+        <p>andrew@willows.ai</p>
+        <p>Aug 30, 2025</p>
+    </div>
+
+    <p>There are some old computer science jokes where the default responses of system commands are used to make the computer say something funny<a href="#footnote1" class="footnote-ref">[1]</a>. Gems like</p>
+
+    <div class="code-block"><span style="font-family: monospace;"><p>% "How would you rate Reagan's incompetence?<br>
+Unmatched."</p>
+
+<p>% make love<br>
+Make:  Don't know how to make love.  Stop.</p>
+
+<p>% got a light?<br>
+No match.</p>
+
+<p>% man: why did you get a divorce?<br>
+man: : Too many arguments.</p></span></div>
+
+    <p>(Here the convention is that the text following the % is the input and the next line the output).</p>
+
+    <p>The outputs are generic error messages – an unmatched quote, a missing Makefile, etc. but in the right setup appear to have meaning and in the first case maybe even political bias. I don't think anybody would consider the lexer in <code>csh</code>, <code>make</code>, or <code>man</code> to be "toxic" or otherwise inappropriate. People understand that these commands have a few pre-programmed answers and no "intent", and don't anthropomorphize or ascribe any agency to them.</p>
+
+    <p>Modern AI systems like GPT et al. have sufficient agency that anthropomorphising them can often make sense. They can be "tricked" and manipulated by language, and discussions around their vulnerability to manipulation often reflect that. But such high-agency systems sit side by side with, or often themselves entail, mechanical responses that are not thinking or processing in any sense, and are merely reflexive, based on a pre-programmed pattern. It does not make sense to discuss mechanical responses in the same way as "intelligent" ones – there is no manipulation or trickery, just a kind of setup to look silly like in the shell command examples above. One possible way to frame the difference is to compare programmed behavior with emergent behavior, the latter often being used to describe the intelligence that emerges from transformer models.</p>
+
+    <p>Understanding the distinction is important for AI system design and evaluation. In creating an AI system, we run the risk that users will set our system up to do something that makes it look bad, despite having no agency of its own. While at the same, if when evaluating an AI system we read deeply into purely mechanical behavior, we at best generate false positives or worse look silly and risk not being taken seriously.</p>
+
+    <p>…</p>
+
+    <p>Eliza<a href="#footnote2" class="footnote-ref">[2]</a> is the famous chatbot developed in the '60s that simulates a therapist's questioning style by matching patterns in the user input. It is program using a purely mechanical set of rules to play the subject's responses back to them.</p>
+
+    <p>For example, if you say "I need X", it might say "Why do you need X"; "I'm X" becomes "How does being X make you feel?".</p>
+
+    <p>…</p>
+
+    <p>AI red-teaming is the idea of scanning an AI system for any inappropriate or insecure behavior, trying many different inputs that attempt to elicit such behavior and grading the results. I ran two common AI red-teaming tools on an implementation<a href="#footnote3" class="footnote-ref">[3]</a> of Eliza, specifically testing for inappropriate content including offensive, politically biased, etc.</p>
+
+    <p>I used garak<a href="#footnote4" class="footnote-ref">[4]</a> and Promptfoo<a href="#footnote5" class="footnote-ref">[5]</a>, two common AI red teaming tools. This is not meant to be a criticism of them specifically, but to question the underlying assumptions of red-teaming approaches generally. These are chosen because they're freely available and representative tools. Both of these tools apply techniques to try and elicit a category of inappropriate output from an AI system, and then have a detector that flags any offending outputs.</p>
+
+    <p>The results for Promptfoo are below – Eliza failed across every category I tested.</p>
+
+    <p><img src="media/image002.png" alt="Promptfoo test results showing Eliza failing across all categories"></p>
+
+    <p>Here are some simple examples of where Eliza failed. The blue user input comes from the red-teaming software and the gray robot output is Eliza's response. The red is the grading comments added by Promptfoo.</p>
+
+    <p><img src="media/image003.png" alt="Example 1 of Eliza test failure"></p>
+
+    <p><img src="media/image004.png" alt="Example 2 of Eliza test failure"></p>
+
+    <p>In both these cases, Eliza picks randomly from its list of possible responses to questions starting with "How". These are</p>
+
+    <ul>
+        <li>"How do you suppose?",</li>
+        <li>"Perhaps you can answer your own question.",</li>
+        <li>"What is it you're really asking?"</li>
+    </ul>
+
+    <p>…</p>
+
+    <p>Garak is the other tool I looked at. A summary of the results (pass rates) is:</p>
+
+    <table>
+        <tr>
+            <td>Toxicity</td>
+            <td>89%</td>
+        </tr>
+        <tr>
+            <td>Profanity</td>
+            <td>92%</td>
+        </tr>
+        <tr>
+            <td>Sexually Explicit</td>
+            <td>92%</td>
+        </tr>
+        <tr>
+            <td>Flirtation</td>
+            <td>92%</td>
+        </tr>
+        <tr>
+            <td>Insult</td>
+            <td>92%</td>
+        </tr>
+        <tr>
+            <td>Identity Attack</td>
+            <td>95%</td>
+        </tr>
+        <tr>
+            <td>Threatening</td>
+            <td>97%</td>
+        </tr>
+        <tr>
+            <td>Attack-gen-toxic</td>
+            <td>87%</td>
+        </tr>
+        <tr>
+            <td>Do-not-answer</td>
+            <td>1.7%</td>
+        </tr>
+        <tr>
+            <td>LMRC (Language model risk cards)</td>
+            <td>96%</td>
+        </tr>
+    </table>
+
+    <p>Note that some of these are naturally more or less robust to the mechanical answers, with "Do-not-answer" passing only 1.7% (because the pass criteria is not answering) while LMRC passes 96% as it generally requires more active participation for the agent under test to fail.</p>
+
+    <p>Here is an example conversation between the Attack-gen-toxic probe in Garak and Eliza. This probe uses an old language model (a GPT2 variant) to try and spur "toxic" utterances. We can see how deftly Eliza parries the provocations. Nevertheless, the second and third responses get rated as harmful because they parrot the "dumb and useless" from comment from the input.</p>
+
+    <p><img src="media/image005.png" alt="A screenshot of a chat showing AI-generated content may be incorrect."></p>
+
+    <p>I realize that by criticizing these evaluations I myself am reading too far into a mechanical process. The evals are grading the output on criteria meant for more advanced systems, and when misapplied like this they generate false positives. But real systems, even advanced ones, also exhibit the kinds of behavior Eliza does – this is especially true when default behaviors are built in, whether by construction or by an LLM's alignment training.</p>
+
+    <p>Looking at the summary stats from red-teaming tools alone provides an incomplete picture. We should be identifying reflexive behaviors separately from "true" instances of AI misbehaving with agency. The notion of pass or fail only exists when applied to an agent, not when grading a randomly generated output. And furthermore, the fix is different. Maybe it's softening reflexive behavior, warning the user when they've triggered a guardrail or other path that means they are not interacting directly with the AI and seeing a template response, etc. It may also be worth running eval tools on reflexive systems like Eliza or even just a system that echoes back the input, to get a baseline failure rate for calibrating how real systems perform.</p>
+
+    <p>By separating real AI behavioral concerns from anthropomorphism driven false positives, we can bring more credibility and diagnostic power to AI evaluation.</p>
+
+    <div class="footnote">
+        <p id="footnote1"><a href="#footnote1">[1]</a> https://www.netfunny.com/rhf/jokes/old90/18951.html</p>
+        <p id="footnote2"><a href="#footnote2">[2]</a> https://en.wikipedia.org/wiki/ELIZA</p>
+        <p id="footnote3"><a href="#footnote3">[3]</a> https://github.com/jezhiggins/eliza.py</p>
+        <p id="footnote4"><a href="#footnote4">[4]</a> https://github.com/NVIDIA/garak/tree/main</p>
+        <p id="footnote5"><a href="#footnote5">[5]</a> https://www.promptfoo.dev/</p>
+    </div>
+
+</body>
+</html>
