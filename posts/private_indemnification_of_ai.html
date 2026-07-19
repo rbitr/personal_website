@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Private indemnification of AI models against copyright violation is a symptom of government inaction</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2>Private indemnification of AI models against copyright violation is a symptom of government inaction</h2>
+<p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>Oct 13, 2023</a></p>
+<p>In Neil Stephenson’s <em>Snow Crash</em>, the United States has become a libertarian paradise, where people drive on private roads (Fairlane Inc. or Cruiseways), defence is private (General Jim’s Defence System or Admiral Bob’s National Security), etc. The federal government still exists but has turned completely inward and bureaucratic, focused on writing long memos about toilet paper policy and timing employees while they read them (15 minutes means an efficient employee that might miss details, 16 minutes a methodical worker that might get hung up on details).</p>
+<p>I see a parallel in recent lawsuits claiming copyright infringement by generative AI and the response of some major tech companies. Recently Microsoft<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>, Google<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> and IBM<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a> all announced indemnification against lawsuits for users of some of their gen-AI products.</p>
+<p>The substance of the indemnification is very reasonable and I personally agree with it. For example, Google says</p>
+<blockquote>
+<p><em>our training data indemnity covers any allegations that Google’s use of training data to create any of our generative models utilized by a generative AI service, infringes a third party’s intellectual property right.</em></p>
+<p><em>our indemnity obligations now also apply to allegations that generated output infringes a third party’s intellectual property rights… An important note here: you as a customer also have a part to play. For example, this indemnity only applies if you didn’t try to intentionally create or use generated output to infringe the rights of others</em></p>
+</blockquote>
+<p>The division between the underlying data and generated content is good, as is the distinction between potential and actual infringement. I have argued<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> that the mere existence of trained models does not violate copyright, even if such models could be used to violate copyright. The reverse holds as well, just because you used an AI model who’s existence doesn’t violate copyright, doesn’t mean it’s output is free of violation.</p>
+<p>While it may be comforting that big companies are offering indemnification, it presents some major competitive challenges that need attention. The obvious issue is that those who choose to do without the “protection” of one of these indemnifications are, in reality or perception, heavily exposed to claims of infringement. There are lots of publicly available or open source generative AI models available and many incentives to self-host rather than use one of the closed offerings from the companies mentioned<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>. The indemnification shifts the landscape away from these open alternatives. Like with patents, intellectual property suddenly becomes a barrier to entry that favours large incumbents, instead of something that encourages innovation.</p>
+<p>Arguably, the gen-AI indemnifications and the rhetoric that accompany them can be seen as the latest salvo in an ongoing war on software freedom that has flared up again in response to new questions around AI’s IP considerations. We’ve seen companies trying to change the definition of open source, and now we’re seeing indirect attention drawn to the “risks” of using free AI models outside of paid enclaves (franchulates?). This is reminiscent of the old campaigns against Linux where Microsoft and others claimed open source software violated their patents and threatened to come after users<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, albeit more subtly. The effect is the same, it pushes users away from free software that they use as they see fit and towards large established companies.</p>
+<p>I’ll also mention that it’s exactly this concept of “protection” that governments are supposed to provide. Having a framework that provides a stable and even playing field means smaller players don’t have to align with a major power for protection and can operate without fear. This is the same reason countries have police and militaries and courts, so we don’t have to hire the Mafia for protection like in <em>Snow Crash</em>. Yesterday I saw a social media post from a PM at a tech company offering indemnification promoting their AI product by saying “…sleep well and don’t worry about getting sued. We’ve got you covered.” Is that where we are? Not quite “it would be a shame if anything happened” but not the kind of marketing you want to see in a vibrant software ecosystem. One can’t fault the tech companies for stepping up to fulfill demand in the presence of a regulatory void, but one can blame governments for allowing the void to exist.</p>
+<p>Technology is changing very quickly. There are already questions about generative AI before the courts and in time a body of precedent and legislation will be built up. None of that excuses governments abdicating responsibility and sitting idle while companies offer their own quasi-judicial protection frameworks. Government activity towards regulation has seemingly focused on more superficial and nebulous “safety” issues that align with political and corporate agendas, while ignoring a massive regulatory gap in commercial application of the technology. As an example of what could work, this year, Japan announced that AI model training does not violate copyright<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>, providing clarity for companies operating there. That may not be the end of the story, but it shows leadership to take a position on the matter rather than let private actors use uncertainty unfairly for their own gain. Others need to step up and do the same.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a href="https://www.microsoft.com/en-us/licensing/news/Microsoft-Copilot-Copyright-Commitment">https://www.microsoft.com/en-us/licensing/news/Microsoft-Copilot-Copyright-Commitment</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><a href="https://cloud.google.com/blog/products/ai-machine-learning/protecting-customers-with-generative-ai-indemnification">https://cloud.google.com/blog/products/ai-machine-learning/protecting-customers-with-generative-ai-indemnification</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p><a href="https://newsroom.ibm.com/2023-09-28-IBM-Announces-Availability-of-watsonx-Granite-Model-Series,-Client-Protections-for-IBM-watsonx-Models">https://newsroom.ibm.com/2023-09-28-IBM-Announces-Availability-of-watsonx-Granite-Model-Series,-Client-Protections-for-IBM-watsonx-Models</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p><a href="http://marble.onl/posts/general_technology_doesnt_violate_copyright.html">http://marble.onl/posts/general_technology_doesnt_violate_copyright.html</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p><a href="http://marble.onl/posts/why_host_your_own_llm.html">http://marble.onl/posts/why_host_your_own_llm.html</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p><a href="https://money.cnn.com/magazines/fortune/fortune_archive/2007/05/28/100033867/">https://money.cnn.com/magazines/fortune/fortune_archive/2007/05/28/100033867/</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7" role="doc-endnote"><p><a href="https://finance.yahoo.com/news/ai-art-wars-japan-says-185350499.html">https://finance.yahoo.com/news/ai-art-wars-japan-says-185350499.html</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

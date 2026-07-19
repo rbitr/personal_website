@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Data bias is giving way to training bias</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2>Data bias is giving way to training bias</h2>
+<p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>Feb 24, 2024</p>
+<p>Google was in the news this week for the way its Gemini AI application generated images with racial bias – I’m not going to dwell on that, there are plenty of articles<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. What’s interesting though is that the traditional concern (for AI traditional means from two years ago) was about big AI models perpetuating bias in the training data. It’s been repeatedly demonstrated (and obvious) that datasets of images or text scraped from the internet have many different biases and stereotypes. And since stereotyping is literally what AI does, a raw model trained on this data is going to do things like assume someone of a certain profession is male or female, or be more likely to depict a CEO as an old white man. Someone using a pretrained model for an application that exposes users to this bias would run the risk of passing it on.</p>
+<p>What’s different now and what Gemini could be the poster child for is that the dominant (not only) bias mode in AI is moving towards the biases of the creators rather than the biases of internet data (for lack of a better term). Aspects (like race and gender of people) of the images Gemini generates are skewed towards what its creators trained it to generate, not the distribution of billions of internet images. The same is true for “aligned” language models. They are doing what they’re told (through fine-tuning) and not what they might have done based on how they were pre-trained.</p>
+<p>Overall that’s a great shift. If we can make a model do something stupid but repeatable, we’re on track to get it to do something useful instead of just acting as an autocomplete. But part of the shift is that the responsibility for behavior shifts to the team building the model, and the risk profile is different.</p>
+<p>One risk is the political or brand impact of training decisions. A model that refuses to answer benign questions ends up subject to ridicule. That will become less relevant for end applications that are focused on more narrow use cases. A general purpose model like Llama-chat giving a lecture on misinformation when asked to generate a poem about the moon landing being fake is well over the top. A customer service chatbot refusing to talk about anything but customer service is normal and expected<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>The more concerning risk to me is side-effects as models are fine-tuned to remove unwanted biases and promote particular outputs. Superficial fixes may cause unexpected behavior that ends up as bad or worse than the issue it was trying to fix. This appears to be what happened at Google. These models are still computer programs and risk responding to the letter of their training instead of the spirit. A very careful approach in training, evaluation, and red-teaming is going to be needed, that possibly includes making some tough decisions about the kind of output that’s appropriate, and looking beyond first-order notions of bias. Meta’s approach of comparing “helpfulness” vs “harmfulness” and looking at how the two trade-off is an example.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<p>I think it’s especially important to be clear about what decisions we’re expecting AI models to make, and how we read in to them. If I ask an image generation model to draw me a picture of a person in 1930, I’m giving it an underspecified problem and an expectation of stereotyping is implicit in the question<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>. There are several obvious approaches a person might use to handle this: Draw something reflective of a historically significant event at that time and explain why you chose this depiction (this could even be an opportunity for some education about a historical event). Draw a historical figure. Or ask for more information – what country, what setting, etc. At least some part of the problem is the expectation that it’s possible to generate output that’s universally appropriate without sufficient input, and that the we allow the models to be used in this way.</p>
+<p>We’ve moved on from accepting the raw bias of training data to having to make our own choices about the AI systems we build. But even if humans are now firmly in control, this applies mostly to the recent instruction tuned models. There are still plenty of ways for models to be biased in unwanted or inappropriate ways. And it applies to people who know what they’re doing – which few if any do until hindsight kicks in. Google is one of the most prominent AI research groups in the world and they still can make mistakes.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>https://www.theverge.com/2024/2/21/24079371/google-ai-gemini-generative-inaccurate-historical<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>https://www.marble.onl/posts/content-and-controversy-in-generative-ai.html<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>https://arxiv.org/abs/2307.09288<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>https://www.marble.onl/posts/code_of_practice_and_bias.html<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
