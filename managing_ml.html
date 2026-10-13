@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Managing ML Models and People</title>
+  <style>
+    html {
+      line-height: 1.5;
+      font-family: Georgia, serif;
+      font-size: 20px;
+      color: #1a1a1a;
+      background-color: #fdfdfd;
+    }
+    body {
+      margin: 0 auto;
+      max-width: 36em;
+      padding-left: 50px;
+      padding-right: 50px;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      hyphens: auto;
+      word-wrap: break-word;
+      text-rendering: optimizeLegibility;
+      font-kerning: normal;
+    }
+    @media (max-width: 600px) {
+      body {
+        font-size: 0.9em;
+        padding: 1em;
+      }
+    }
+    @media print {
+      body {
+        background-color: transparent;
+        color: black;
+        font-size: 12pt;
+      }
+      p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+      }
+      h2, h3, h4 {
+        page-break-after: avoid;
+      }
+    }
+    p {
+      margin: 1em 0;
+    }
+    a {
+      color: #1a1a1a;
+    }
+    a:visited {
+      color: #1a1a1a;
+    }
+    img {
+      max-width: 100%;
+    }
+    h1, h2, h3, h4, h5, h6 {
+      margin-top: 1.4em;
+    }
+    h5, h6 {
+      font-size: 1em;
+      font-style: italic;
+    }
+    h6 {
+      font-weight: normal;
+    }
+    ol, ul {
+      padding-left: 1.7em;
+      margin-top: 1em;
+    }
+    li > ol, li > ul {
+      margin-top: 0;
+    }
+    blockquote {
+      margin: 1em 0 1em 1.7em;
+      padding-left: 1em;
+      border-left: 2px solid #e6e6e6;
+      color: #606060;
+    }
+    code {
+      font-family: Menlo, Monaco, 'Lucida Console', Consolas, monospace;
+      font-size: 85%;
+      margin: 0;
+    }
+    pre {
+      margin: 1em 0;
+      overflow: auto;
+    }
+    pre code {
+      padding: 0;
+      overflow: visible;
+    }
+    .sourceCode {
+     background-color: transparent;
+     overflow: visible;
+    }
+    hr {
+      background-color: #1a1a1a;
+      border: none;
+      height: 1px;
+      margin: 1em 0;
+    }
+    table {
+      margin: 1em 0;
+      border-collapse: collapse;
+      width: 100%;
+      overflow-x: auto;
+      display: block;
+      font-variant-numeric: lining-nums tabular-nums;
+    }
+    table caption {
+      margin-bottom: 0.75em;
+    }
+    tbody {
+      margin-top: 0.5em;
+      border-top: 1px solid #1a1a1a;
+      border-bottom: 1px solid #1a1a1a;
+    }
+    th {
+      border-top: 1px solid #1a1a1a;
+      padding: 0.25em 0.5em 0.25em 0.5em;
+    }
+    td {
+      padding: 0.125em 0.5em 0.25em 0.5em;
+    }
+    header {
+      margin-bottom: 4em;
+      text-align: center;
+    }
+    #TOC li {
+      list-style: none;
+    }
+    #TOC a:not(:hover) {
+      text-decoration: none;
+    }
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<h2 id="getting-more-out-of-experts-by-focusing-on-results-and-not-process-observations-of-people-and-neural-networks">Getting more out of experts by focusing on results and not process: observations of people and neural networks</h2>
+<h3>
+Andrew Marble<br> 
+andrew@willows.ai<br>
+May 17, 2021
+</h3>
+<p>What do decision making frameworks, process-oriented management, and feature attribution in machine learning have in common? They all dumb down complex realities in the name of being simple to understand. In doing so, they throw away information and can lead to lowest-common-denominator results that don’t take advantage of expertise. While simplifications have their place, my focus here is on introducing alternatives that are better for managing experts, whether human or ML.</p>
+<hr>
+<p>An observation I’ve made as a consultant is that people like to understand or decide things using a tidy framework with a few dimensions. The world isn’t really like this, and these frameworks destroy information, sometimes for the better, but often simply to hide uncertainty or implicit choices in order to justify decisions.</p>
+<p>The analogy to machine learning (because this is about machine learning) is “feature attribution”<sup>1</sup> methods, where the action of a model is understood in terms of the importance it places on different parts of the input. Examples of feature attribution could include heatmaps showing which part of an input image is most responsible for the label predicted by the model, or which columns in a data table were most influential in making a prediction. Like frameworks, feature attribution can be valuable, but it’s a simplification that tries to reduce a complex action into something simple, at the expense of using the full expertise of the model.</p>
+<p>Feature attribution is often held up as a kind of “explanation” for how a machine learning model is making its decision. Personally, I think asking for an explanation is usually the wrong framing. In many cases, what we really want to know is whether the model is qualified to make a prediction. A related business phenomenon is where managers, clients, etc. want to get you to do some task – as an acknowledged expert, but also want to tell you exactly how to do that task and question every step you take. Good managers set expected outcomes, trust the expert to use their experience to achieve these outcomes, and focus on accountability for the results. The latter approach is more effective, because it allows the manager to benefit from expertise they don’t possess themselves. The former approach means that the process has to be simple enough that the manager can understand it, and the expert becomes an imperfect instrument for carrying out the work the manager wanted to do, instead of a contributor of expertise. Anyone from a technical or academic background who has worked in business consulting probably knows what I’m saying here. There is the whole other topic of managers mistaking themselves for journeymen as opposed to coordinators, but I digress.</p>
+<p>Like hiring an expert, with a ML model we really want to know whether it is qualified to make the predictions we want it to. One way we can do that is to look at situations the model has encountered during training, and how similar these are to a new input. If the model has seen something similar in training, it has a good analogy from which it can reason. If it hits a never-before-seen input with no analog in the training data, a so called out-of-distribution sample, it has no basis in trying to predict it, and we should be careful about relying on the results.</p>
+<p>The reason micromanaging doesn’t work is because experts do not make decisions with frameworks, or clear cut, simple rules. They use “experience” which roughly corresponds to reasoning by analogy. They’ve done or seen things before, and seen what outcome resulted, so can apply these learnings to new, similar situations. Of course experts quantify things, divide decisions up into logical components, and use frameworks as memory aides. But the decisions are based on experience – if you accept that such thing as an expert exists then this logically follows.</p>
+<p>The way modern AI (neural networks trained with some variant of stochastic gradient descent) works is in effect by analogy. A model is trained with examples and learns a set of parameters that map the example inputs to their corresponding labels. What ends up happening is that similar inputs are treated similarly by the model. The generalization power of neural networks means that newly seen inputs (that are close, in some sense, to training data) are treated the same as the training data they are close to, leading to a correct prediction.</p>
+<p>The analogy model can be used to understand the basis for a model’s prediction, and the model’s qualification to make that prediction. It can help verify that the model is basing its prediction on data it has seen before that is satisfactorily close to the input data. This method is not perfect, but in my view it is closer to intuition about how the model is actually making its decisions. Compare this with feature attribution, which is trying to apply a framework to the decision a model made in a different way.</p>
+<p>So how do we know if the model has encountered enough similar training examples to make it reliable to predict a given input? There is not a definitive answer, but there are different options that may be appropriate depending on the case. I won’t provide a framework for when to use which, but will offer some intuition about a method that I like<sup>2</sup>.</p>
+<p>Each input a model encounters is a small lesson for the model that helps it learn to make better predictions. The lesson takes the form of an update to the model’s parameters. For a new input, we can look for similar lessons in past training data: what training data would lead to similar updates compared to the new input. Based on this similarity, we can conclude whether the model has already learned enough to confidently predict the new data.</p>
+<p>Mathematically, the “lesson” is the gradient – the sensitivity of the model’s loss function to changes in the model parameters. During training, this gradient is used to update the model to fit it to the data. There is some intuitive satisfaction in using the gradient, because it focuses on what the model is learning from the input, instead of any specific characteristics of the input that are more subject to human interpretation. After all, if we take the approach that the model is the expert, we want to make sure the model has learned from the sample, not that a human would learn from it.</p>
+<p>This approach is about assessing the model’s skill (or education if you like), not about second guessing how it makes its decision (a bit more on this later). Same as if a non-specialist hired someone with a Ph.D. in deep learning, they’d be better served trusting the subject matter expertise of that person and confirming what they achieve, vs. trying to second guess their dumbed down explanations of how they are applying their expertise. (Making sure you are setting this person up for success by giving them work that aligns with their skills is another matter. The mistake is often made with real people as it is with ML models of hiring on a set of criteria that has nothing to do with how they’ll be judged on the job, and then complaining that they’re not good at what you expected, but that’s another story).</p>
+<p>The approach I describe above is called similarity-based evaluation of the model. The output for each input is a set of the training data that provides the most similar lessons to the model. Some subjectivity is introduced, because it is still up to the model evaluator to decide whether the training data that is highlighted is relevant. Much as you’d have to decide if someone’s education and experience were relevant when hiring them. By being close to how the model has actually learned to make decisions, this method provides a window into the model’s operation that can help confirm it can be trusted.</p>
+<p>Below is a toy example, with real data and a simple fully connected neural network model. The panel shows an input (test) image of a written number, and the three training points that are closest in what they teach the model. In the first row, the number 2 looks very similar to “training point 1”, the closest training point in the eyes of the model. The model predicts correctly that this is a 2. In the second row, the most similar training point is also a 2, but it looks very different than the input. Training points 2 and 3 are also very different. It is evident that the input sample does not have a close precedent in the training data, and in this case, the model classifies the input incorrectly as an 8.</p>
+<p><img src="example.png" /></p>
+<p>It’s important to point out the subjectivity that remains here. It’s up to the person reviewing to judge whether training data is similar enough. But I’d argue it presents an intuitive view of how the model is making its decision, that doesn’t suffer from the oversimplification that happens with feature attribution. (The fact that it’s intractable to try and write down the features that define even simple written characters like those above is why deep learning now dominates computer vision problems. Incidentally, even if we did come up with a feature set, say loops, curves, and directed strokes, we’ve just moved the problem to trying to define those features.)</p>
+<p>I’ve considering above the perspective of a manager that is trying to make use of the model’s expertise. The needs of the ML engineer building the model are more like the journeyman watching the apprentice work. Having intuition and evidence about the internal mechanics of the model is important, and feature attribution methods have a place in this analysis. But they are one view of a more complex picture that is the purview of the ML engineer. Unless you’re prepared to go down the road completely of fully understanding the data, model and training from a technical perspective, selectively looking at parts you understand does not give the whole story, and is often counterproductive.</p>
+<p>Modern ML models are equations with millions of terms that have been tuned based on exposure to gigabytes of data. Complex business decisions must consider myriad internal and external factors, which is why shareholders look for experienced leadership teams. And experts log years of education and work experience to build up their trade. It is convenient, sometimes useful, and sometimes satisfying to try and reduce hard-learned experience into a list of important factors. But be careful. To get the best out of people or models, it is sometimes better to recognize they have experience you don’t, and trust the experience and the outcomes, instead of dwelling on the process.</p>
+<hr>
+<p><sup>1</sup>I use quotes to highlight terms because I don’t like italics, not to mock or indicate scepticism, as in the sense of ‘so called “experts”’</p>
+<p><sup>2</sup>I’m describing the intuition behind “cosine similarity of the gradients” as discussed in the following reference: Hanawa et al., Evaluation of Similarity-based Explanations, <a href="https://arxiv.org/abs/2006.04528" class="uri">https://arxiv.org/abs/2006.04528</a>. That reference compares a few related methods.</p>
+</body>
+</html>

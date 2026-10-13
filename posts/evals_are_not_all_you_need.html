@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Evals are not all you need</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p><h2>Evals are not all you need</h2></p>
+    <p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@kereva.io<br>March 3, 2025</a></p>
+    <p><em>TLDR: Evals make sense for unitless comparison between different base language models (LLMs), and have their place in testing, but the premise of using them to guarantee software performance is flawed.</em></p>
+<p><strong>What are evals?</strong></p>
+<p>Evals (evaluations) refers to test-based performance measurement of AI systems. For example, in a customer service chatbot, an eval could entail prompting the chatbot with a set of customer queries, scoring the results (based on helpfulness, accuracy, etc.) and aggerating the scores to give a picture of how well the chatbot performs. Here I focus on LLMs unless otherwise mentioned.</p>
+<p>There’s been a proliferation of evaluation tools – both stand alone<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and incorporated into observability platforms<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> or app building tools. My impression is that the dominant mode of building with AI is still ad-hoc development without systematic testing (“prompt and pray”); however, the conventional wisdom is that evals are essential to responsible AI development.</p>
+<p><strong>Why are evals being used?</strong></p>
+<p>Like all things AI, the focus with evals feels to be about the how, and not the why. Some business reasons one might do evals are:</p>
+<p><u>To comply with a standard</u>. Various standards or regulations (the EU AI Act for example<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>) mandate testing in some instances. This doesn’t answer the root cause of why testing is useful, but compliance is a legitimate business need, so organizations test their models.</p>
+<p><u>Performance testing</u>. Like the earlier example of a chatbot, evaluation can be seen as a proxy for testing the performance of an AI system. For base models like GPT and Claude, performance benchmarks are used for comparison with previous offerings and those of competitors. For chat systems, there are common evaluators like RAGAS<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> that claim to test how good the system is. Arguably, performance tests act as a stand-in for more costly user research. It’s been long known to be a poor substitute – see the date on the quote in the image below – chatbot arena and r/localLlama both rate base models based on human evaluation.</p>
+<p><img src="https://marble.onl/posts/media/karpathy_twitter.png" style="width:6.5in;height:3.36806in" alt="r/LocalLLaMA - Karpathy on LLM evals" /></p>
+<p><u>Red teaming</u>. Red teaming can be thought of as stress testing to look for weaknesses or problems. It is distinct from performance measurement in that the goal should be to find root cause, rather than evaluate statistical performance. Red teaming is often seen in the context of security testing<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>, but can also apply for performance, for example checking if a chatbot suffers from common known failure modes.</p>
+<p><del>Overfitting</del> <u>Prompt engineering and A/B testing</u>. Evals provide a standard way to test the effect of changes to system design, such as prompts, retrieval, etc. to optimize performance. A risk is that the system can be overfit to the eval set.</p>
+<p><strong>What is the problem with evals?</strong></p>
+<p>Evals alone do not provide useful performance information, let alone guarantees.</p>
+<p><u>It’s hard or impossible to do them well.</u></p>
+<p>We can break this down in terms of data, scoring, systems, and the approach to failure.</p>
+<p>Data refers to the test inputs that make up an eval. Comprehensive test data is hard to come by for real use cases, and so evals typically use either a synthetic dataset (often generated with AI) or a smaller hand-crafted data set. While it’s not impossible to build comprehensive data sets for a given task, it’s often cost prohibitive (and requires stepping away from the keyboard into the real world<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>) and so the industry favors synthetic data that is often unrealistic, or generic benchmarks that aren’t representative of the specific task being judged.</p>
+<p>Scoring LLM responses to a nontrivial task (like the answer quality of a chatbot) is hard and expensive, so automated methods are favored (e.g. LLM-as-a-judge<a href="#fn7" class="footnote-ref" id="fnref7" role="doc-noteref"><sup>7</sup></a>). This place a limit on the quality of the scores, and the type of issues they can catch, and recurse the evaluation problem into “judging the judge<a href="#fn8" class="footnote-ref" id="fnref8" role="doc-noteref"><sup>8</sup></a>” without really solving it.</p>
+<p>Every deployed AI tool used in a business application is a system that includes an AI model (like GPT-4o) and additional architecture like databases, prompt chains, etc. Evaluating the model alone provides limited information about whether the system will be fit for purpose. Yet the majority of evals target the base model. This is understandable because it allows standardization and comparison between base models, and the evals are designed for those building base models. But it’s irrelevant to end uses. So when we see model benchmarks for legal knowledge or finance or medical knowledge, these are red herrings that don’t give information about how a system build on top of the model will perform.</p>
+<p>Finally, evals overwhelmingly aggregate results into some kind of average that ignores the nature and severity of the errors or failures that are present. If a chatbot answers with 95% accuracy, that could mean that every response is substantially correct, or that 19/20 are great and 1/20 responses is a blatant lie. On evals related to security or appropriate language, we often see minor issues that would have little commercial importance aggregated with major ones that could present an existential problem. In addition, there is no bar or pass/fail standard. Evals allow comparison, but they don’t typically have targets or thresholds, limiting the usefulness of the metrics they produce.</p>
+<p><u>The long tail.</u></p>
+<p>AI is a long tail problem: the distribution of possible inputs, such as questions that a chatbot can be asked, contains regularly occurring outliers that can never be captured in an evaluation data set. New circumstances will always arise in production that have not been tested for. So, no matter how thoroughly a system has been evaluated, evals alone cannot demonstrate the absence of problems. This comes up regularly when new models are released and reddit instantly finds some embarrassing example of model behavior.</p>
+<p><u>The wrong construct.</u></p>
+<p>The long tail problem leads naturally to the biggest problem with evals. In LLMs, we build these intractably complex, ersatz sentiences that we don’t understand, stand them up in some domain specific task, then try and test them to see if they behave. I’d speculate that this way of doing things arose organically out of academic machine learning practices. Simpler predictive ML models like you might encounter in banking or advertising are essentially curve fitting. We fit some data and then we do an eval to see how good the fit is. But we’ve taken this idea an applied it to validating the performance of all-powerful LLMs that are capable of basically any language construction and hoping that adding a prompt that says “You’re a helpful assistant, only talk about the FAQ on our dog sitting service website” is enough to keep it on task. It’s in these low-breadth applications (like dog sitting FAQ) where the eval approach to AI system development seems most egregious. That somehow a chatbot that should be saying things like “sorry we don’t accept Mastiffs as our service is only available for dogs under 100kg” is under-the-hood actually capable of writing python code or write a short essay about how the moon landing was faked is just bad practice.</p>
+<p>No other software is designed this way – although ironically it may be, with LLM based coding tools. The fact that LLMs are nondeterministic (if that’s true) is no excuse. Software is regularly built around human and environmental factors that add randomness without discarding development practices in favor of evals.</p>
+<p><strong>Conclusion</strong></p>
+<p>As typically implemented, evals aren’t great. This is largely due to their false appeal as a substitute for proper testing with users. In reality, every shortcut offered in data generation, automatic scoring, etc. chips away at the evals’ usefulness. Even a good implementation of evals suffers from the long tail problem which is itself one symptom of the root issue of the kind of test-and-patch software development that is being used with LLMs.</p>
+<p>There are cases where none of this matters. Where unpredictable behavior can be tolerated, and the stakes are low. And evals have their place as discussed earlier. But for anything where consistency and predictability are critical, using evaluation as any kind of guarantee of behavior simply doesn’t work.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>For example, <a href="https://www.promptfoo.dev/">https://www.promptfoo.dev/</a>, <a href="https://www.patronus.ai/">https://www.patronus.ai/</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>For example, <a href="https://arize.com/llm-evaluation">https://arize.com/llm-evaluation</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p><a href="https://artificialintelligenceact.eu/article/10/">https://artificialintelligenceact.eu/article/10/</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p><a href="https://docs.ragas.io/en/stable/">https://docs.ragas.io/en/stable/</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>For example, <a href="https://github.com/NVIDIA/garak">https://github.com/NVIDIA/garak</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p><a href="https://www.marble.onl/posts/data_takers_and_makers.html">https://www.marble.onl/posts/data_takers_and_makers.html</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn7" role="doc-endnote"><p><a href="https://github.com/llm-as-a-judge/Awesome-LLM-as-a-judge">https://github.com/llm-as-a-judge/Awesome-LLM-as-a-judge</a><a href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8" role="doc-endnote"><p><a href="https://arxiv.org/abs/2306.05685">https://arxiv.org/abs/2306.05685</a><a href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

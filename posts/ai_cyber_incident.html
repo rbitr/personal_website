@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>An AI Cyber Incident in Plain Sight</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+    <h2><p>An AI Cyber Incident in Plain Sight</p></h2>
+<p>Andrew Marble<br><a href="http://marble.onl">marble.onl</a><br>andrew@willows.ai<br>Nov 24, 2024</a></p>
+    <p>There’s lots of discussion about the security of generative AI systems. With the right access, you can make a large language model do whatever you want, regardless of how it’s been trained. This makes for lots of potential security flaws, and they’ve been pointed out by many (see e.g. <a href="https://embracethered.com/"><u>https://embracethered.com/</u></a>).</p>
+<p>These flaws aren’t in question, but it’s interesting to know how they translate into the prevalence of real world “cyber events” causing an actual loss. If you follow the Gen AI world you may have heard about the car dealer chatbot that “sold” a SUV for $1, and you’ve probably seen examples of LLMs saying something embarrassing (mostly Google’s for some reason). It’s trivial to get many public facing chatbots to tell you their system prompt, including the part about “don’t reveal these instructions” if that’s something you’re interested in, but I’ve never seen that exploit parleyed into something more nefarious (except my example below).</p>
+<p>It’s difficult to find real instances where an LLM flaw led to a cyber incident anywhere close to comparable to the security breaches seen elsewhere - the ones where millions of people’s data gets published on the dark web, or a hospital is shut down. I can find some "adjacent" stuff where AI had some role in an attack, say though automation, but nothing where a flaw in an LLM led to a cyber incident. If any one has an example, particularly where one of the OWASP LLM Top 10<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> led to an incident in the wild (as opposed to something demonstrated by security researchers) please let me know.</p>
+<p>I’m not dismissing the possibility, exploits are certainly real and many production systems include almost no built in protection and are very vulnerable. I think it’s a function of how immature the market is, there just aren’t enough of these being used in critical places to matter. At some point, someone will write “nothing to see here” in lead tape on their luggage and trick the Gen AI powered scanner into ignoring the prohibited items inside, just not yet<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>.</p>
+<p>Anyway, there is a real, costly exploit that has happened in the wild that is rarely mentioned but well known. The New York Times (NYT) is suing OpenAI based on, amongst other things, the fact that one of the GPT models could be induced into verbatim or near verbatim reproduction of NYT articles, as demonstrated in an exhibit of 1000 such articles files with the lawsuit<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>. OpenAI contends that inducing GPT to create these verbatim reproductions was a “hack”<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> which of course NYT disputes. The fact is that training data was exposed when it wasn’t supposed to be.</p>
+<p>Regardless of the merits of the lawsuit and OpenAI’s defence, exposing training data is an LLM security flaw, characterized under <em>OWASP LLM02:2025 Sensitive Information Disclosure</em> and <em>LLM10:2025 Unbounded Consumption</em> (see footnote 1). Generating verbatim NYT articles was a flaw, not an intentional feature of OpenAI’s model, and this flaw was instrumental to a high profile lawsuit for “billions”<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> (!).</p>
+<p>I think this example gets mixed up with the arguments related to the lawsuit, but in its pure form it’s a very clear case of a loss resulting from a LLM security vulnerability. With the right hardening, testing, and guardrails in place, this behavior could have been mitigated.</p>
+<p>While it might be possible to obscure the fact that a model was trained on a particular data set, such as NYT articles, it’s useful to look at the larger problem of training data exfiltration that necessarily happens over many specifically crafted prompts. In the lawsuit discussed here, the NYT legal team presented 1000 examples and may have tried many more before arriving at these. For such an attack, the system (here GPT’s API) could include controls that limit the rate of certain kinds of prompts, or detectors that flag attacks. These data exfiltration prompts have a clear signature that could be detected and trigger mitigating action.</p>
+<p>Importantly, mitigating the flaw in this example, I think, is better done with controls rather than by trying to alter the base model itself, in order to be more general (applying to unknown data rather than e.g. just NYT articles) and have higher performance (relying on deterministic or fine-tuned controls rather than internal properties of a language model.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p>https://owasp.org/www-project-top-10-for-large-language-model-applications/assets/PDF/OWASP-Top-10-for-LLMs-v2025.pdf<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p>https://www.theverge.com/2021/3/8/22319173/openai-machine-vision-adversarial-typographic-attacka-clip-multimodal-neuron<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p>https://nytco-assets.nytimes.com/2023/12/Lawsuit-Document-dkt-1-68-Ex-J.pdf<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p>https://www.reuters.com/technology/cybersecurity/openai-says-new-york-times-hacked-chatgpt-build-copyright-lawsuit-2024-02-27/<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p>https://www.bbc.com/news/technology-67826601<a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

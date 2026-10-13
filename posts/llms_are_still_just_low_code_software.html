@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>llms_are_still_just_low_code_software</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<h2><p>LLMs are still just low code / no code software</p></h2>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>July 10, 2026</a></p>
+<p>I wrote the following in early 2023, drawing a parallel between LLMs
+and low code programming<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a>:</p>
+<p><em>[W]hen the dust settles, like with low-code programming, there
+are going to be limitations that make LLMs much more narrow in their
+applicability than the initial hype predicts.</em></p>
+<p><em>[M]y money is on generative AI's plateau of productivity shaking
+out the way low-code programming has. That is, it exists and fills many
+domain specific niches, but it's not market dominating and hasn't
+changed the structure of industry of society.</em></p>
+<p>I can see the argument for laughing at this now as short sighted and
+obviously incorrect, and there was a period where I might have almost
+agreed and been a bit embarrassed. But now I actually feel like doubling
+down. I read a lot of Hacker News (which I know doesn’t represent a
+cross section of reality) and continuously come across example threads
+like <a
+href="https://news.ycombinator.com/item?id=48841975">https://news.ycombinator.com/item?id=48841975</a></p>
+<ul class="incremental">
+<li><p>“LLMs are quite bad at large scale pattern fidelity. They'll even
+forget key details and constraints unless told over and over again”</p>
+<ul class="incremental">
+<li><p>“Fully agree. I tried to refactor parts of a large code base with
+Fable+ultracode and it just keeps accidentally merging distinct concepts
+and making up explanations/reasonings that the code base did not
+contain”</p>
+<ul class="incremental">
+<li><p>“Would putting that in black and white in the comments around
+then controller help?”</p></li>
+</ul></li>
+</ul></li>
+</ul>
+<p>There is always this pattern of someone identifying gaps, and then
+someone else telling them they’re doing it wrong and they need to prompt
+explicitly or whatever. It’s most prominent in code (because code is the
+most prominent use case) but I’ve seen it with respect to writing
+style<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>, and also anecdotally for non-coding
+tasks like classification or other language processing. I’m writing here
+about all applications, but mostly focusing on coding for the reason
+above.</p>
+<p>So what, prompt engineering is a thing right, and apparently it’s a
+skill (just like writing Claude skills is real engineering… knowing what
+words to make uppercase and whatnot). That’s definitely one perspective,
+but I feel more and more that we’re all not just fanatical low-code
+software users that gloss over limitations by blaming the user.</p>
+<p>That’s probably not convincing so far, and it’s still just a feeling
+I get when I see discussions (and use LLMs myself), it’s not causal, so
+I’ll try and elaborate on why I have this overall impression:</p>
+<ul class="incremental">
+<li><p>Too many edge cases don’t work, either without explicit prompting
+about them (which I’d equate to overfitting, or in the low-code scenario
+having to open some awkward scripting window or figure out how to make
+some specific conditional structure out of imaginary wires between
+components). It’s the long tail, we’ve got trillion parameter models
+trained on everything so obviously an incomprehensible number of edge
+cases are covered, but there will always be infinitely more</p></li>
+<li><p>The templated patterns of LLM output and writing are too much to
+ignore. Not X but Y, No A, no B, just pure C. The nonsensical thinking
+traces “Wait…” If you know how LLMs are trained, there’s just too much
+mad-libbing / pattern matching and not enough actual “reasoning” going
+on</p></li>
+<li><p>A lot of the AI products (especially outside coding) and usage 
+patterns end up being effectively low code tools, ways of streamlining 
+particular workflows</p></li>
+<li><p>I already touched on this, but the reaction to people saying
+“have you tried {4.5|4.6|4.7|4.8|Fable}” in response to any criticism is
+still a big tell. Yes I have, I find them amazing, I’m not one of these
+“LLMs are useless” people, but if you’re a heavy LLM user it’s hard not
+to notice that the same issues have basically been present since the
+first instruction-tuned models, we’re just getting better at masking
+them with more complex models</p></li>
+<li><p>The gap between performance on open-ended tasks where lots of
+answers are OK and you can just ignore what didn’t work as expected, vs
+those where you need a definitive result (the former of course may be OK
+for many situations). Where I see this most is anything
+“LLM-as-a-judge”. They are terrible at tasks like assigning a
+score.</p></li>
+</ul>
+<p>So what? How is this not just generic criticisms of LLMs that are
+sure to be addressed shortly or are just because I don’t know how to use
+them? I think understanding what we’re working with is important to make
+the best use of it. Acting like a better skill.md with crisp
+instructions is all that’s in the way of flawless execution doesn’t cut
+it.</p>
+<p>So what’s different if we look at an LLM through the lens of a
+low/no-code tool?</p>
+<p>Some of the success criteria for a low code / no code software
+application are:</p>
+<ul class="incremental">
+<li><p>Faster to configure than to write a program from scratch</p></li>
+<li><p>Can (possibly) be used by nontechnical business users</p></li>
+</ul>
+<p>Likewise, some of the ways in which such software fails are pretty
+much the flip side</p>
+<ul class="incremental">
+<li><p>For “real” applications (as opposed to a sales demo or how the
+vendor claims to the product can be used), either it takes longer to
+configure than just writing the code in the usual way, or functionality
+has to be compromised to fit the capabilities of the tool</p></li>
+<li><p>Developers are still required to the same extent, or only
+specialist “technical” users end up being able to do the
+configuration</p></li>
+</ul>
+<p>We can’t claim a low code product is generally valuable for making
+software by demonstrating that it can do some particular predefined
+task, unless that specific task is all we want it for. Unfortunately,
+it’s not so easy to disprove that a low-code product is the right choice
+for a given task without either some intuition based on experience, or
+by really studying it. It’s doubly hard to convince business buyers that
+a given tool in unsuitable once they’ve latched on to it.</p>
+<p>So we need some intuition about how useful a tool is as a helper, vs
+un-constrained programming. Some example questions are</p>
+<ul class="incremental">
+<li><p>How often are we encountering edge cases where we need to work
+around? This could include repeatedly having to modify prompts, add
+custom architecture or logic, etc.</p></li>
+<li><p>How many rough edges remain? How many compromises have been made
+in functionality to accommodate some limitation that’s been
+encountered?</p></li>
+<li><p>How much time is or should be spent on review, or should be,
+either of code or of other LLM output?</p></li>
+<li><p>For coding projects, how much technical debt is estimated to have
+been incurred?</p></li>
+<li><p>How much time is spent talking about or dealing with LLM specific
+issues (prompting strategies, what skills to create, what tools to use)
+as opposed to on actual product development like architecture or
+functionality?</p></li>
+</ul>
+<p>I see people saying the developer role has changed to orchestrating
+agents or whatever, but if this is really true, presumably the bulk of
+the work is in deciding what’s to be done and writing specs, as opposed
+to fighting with them to do what you want, doing “coding” by another
+name, and with less clarity, in the form of iterating on prompts.</p>
+<p>At a higher level, productivity, despite being notoriously difficult
+to measure, and quality, will be the most telling. Is developer time on
+tasks being reduced because business users can do them end-to-end? Are
+outputs increasing? Are quality measures like customer issues, bugs,
+etc. remaining stable or decreasing? Obviously lines of code (or worse,
+tokens) and other throughput can be made to go up, but are largely
+meaningless outside of being an obvious leading indicator of
+adoption.</p>
+<p>Additionally, we can measure known LLM specific issues, like
+consequences of sycophancy (rework or failure due to an obviously
+incorrect idea being pursued), failure to catch issues during automated
+review, hallucination, and simply sub-par work.</p>
+<p>I’m not trying to disparage LLMs or AI so much as have a realistic
+mental model of how it works and what it’s good at. Like I wrote in
+2023, I feel like people get impressed with demos and make assumptions
+about AI’s strengths that ultimately lead to poor usage. The big thing
+for me is clarity on what AI is best at, so it can be set up for
+success, just like any human collaborator, or tool we use. If you were
+using a low-code tool to build some software or perform some other
+business function, you’d likely be aware of what it’s for and what it’s
+not for, and (leadership having been sold on some fantasy about what the
+tool can do aside) you’d use that to decide if it was the right tool for
+the job. Right now we don’t do that with AI, we just throw it at stuff
+pretending it’s all-powerful. That will change, regardless of whether
+Claude 17.6 addresses the shortcoming of Claude 17.5, the long tail
+assures it. So we’re better off being very clear about what AI is good
+at an what it’s role is in an organization, rather than handling edge
+cases all day.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a
+href="https://www.marble.onl/posts/tempering.txt">https://www.marble.onl/posts/tempering.txt</a>
+(note I originally posted this on LinkedIn, it’s reproduced here so you
+don’t have to go there)<a href="#fnref1" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a
+href="https://news.ycombinator.com/item?id=48842011">https://news.ycombinator.com/item?id=48842011</a><a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

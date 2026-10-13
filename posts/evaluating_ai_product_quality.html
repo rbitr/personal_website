@@ -1,0 +1,1935 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Evaluating AI Agents as Products</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <style>
+    /* ------------------------------------------------------------------
+       Layout / typography additions. Loaded after pandoc.css so these
+       win where they overlap; everything else in pandoc.css still applies.
+       ------------------------------------------------------------------ */
+
+    body {
+      max-width: 44em;
+      color: #333;
+    }
+
+    /* --- headings ------------------------------------------------------ */
+    h1 {
+      font-size: 2.1em;
+      margin: .1em 0 1.4em;
+      line-height: 1.15;
+    }
+    h2 {
+      font-size: 1.55em;
+      margin: 2.6em 0 .6em;
+      padding-bottom: .18em;
+      border-bottom: 1px solid #e4e4e4;
+    }
+    h3 {
+      font-size: 1.2em;
+      margin: 2.1em 0 .45em;
+    }
+    h4 {
+      font-size: .95em;
+      font-weight: bold;
+      margin: 2em 0 .3em;
+      letter-spacing: .01em;
+    }
+    h2 + h3, h3 + h4 { margin-top: 1.2em; }
+
+    /* --- opening abstract: plain italic text, no quote treatment ------- */
+    .lede {
+      margin: 0 0 2.4em;
+    }
+
+    /* --- task list ----------------------------------------------------- */
+    ol.tasks { padding-left: 1.6em; }
+    ol.tasks > li { margin-bottom: 1.6em; }
+    ol.tasks > li > p { margin: 0 0 .6em; }
+
+    /* --- prompts (monospace) ------------------------------------------- */
+    .prompt {
+      font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+                   "Liberation Mono", monospace;
+      font-size: .8em;
+      line-height: 1.6;
+      color: #222;
+      background: #f7f7f8;
+      border-left: 3px solid #d2d2d8;
+      border-radius: 0 3px 3px 0;
+      padding: .75em 1em;
+      margin: .35em 0 1.5em;
+      overflow-wrap: break-word;
+    }
+    .prompt p { margin: 0 0 .75em; }
+    .prompt p:last-child { margin-bottom: 0; }
+
+    .prompt-label,
+    .turn-label {
+      font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+                   "Liberation Mono", monospace;
+      font-size: .72em;
+      letter-spacing: .07em;
+      color: #999;
+      margin: 1.5em 0 0;
+    }
+    .turn { margin: 0 0 1.4em; }
+
+    /* --- wider-than-the-text-column blocks ----------------------------- */
+    .shots-wrap,
+    .metrics-wrap {
+      position: relative;
+      left: 50%;
+      transform: translateX(-50%);
+      margin: 1em 0 2.4em;
+    }
+    .shots-wrap { width: min(96vw, 1120px); }
+    .metrics-wrap { width: min(96vw, 940px); }
+
+    /* --- app screenshot tables ----------------------------------------- */
+    table.app-shots {
+      table-layout: fixed;
+      width: 100%;
+      margin: 0;
+      border: 0;
+      border-collapse: collapse;
+    }
+    table.app-shots th {
+      width: 33.33%;
+      background: transparent;
+      border: 0;
+      border-bottom: 1px solid #e4e4e4;
+      text-align: left;
+      font-size: .8em;
+      font-weight: bold;
+      letter-spacing: .04em;
+      color: #666;
+      padding: 0 6px .3em;
+    }
+    table.app-shots td {
+      border: 0;
+      padding: .7em 6px 0;
+      vertical-align: top;
+    }
+    table.app-shots th:first-child,
+    table.app-shots td:first-child { padding-left: 0; }
+    table.app-shots th:last-child,
+    table.app-shots td:last-child { padding-right: 0; }
+
+    a.shot {
+      display: block;
+      position: relative;
+      line-height: 0;
+    }
+    a.shot img {
+      display: block;
+      width: 100%;
+      height: auto;
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      transition: box-shadow .15s ease, border-color .15s ease;
+    }
+    a.shot:hover img,
+    a.shot:focus img {
+      border-color: #b4b4b4;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, .18);
+    }
+    a.shot::after {
+      content: "\25B6";
+      position: absolute;
+      right: 6px;
+      bottom: 6px;
+      font-family: sans-serif;
+      font-size: 9px;
+      line-height: 1;
+      color: #fff;
+      background: rgba(0, 0, 0, .55);
+      padding: 4px 6px;
+      border-radius: 2px;
+      opacity: .8;
+    }
+    a.shot:hover::after { opacity: 1; }
+
+    /* --- lightbox ------------------------------------------------------ */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(18, 18, 18, .92);
+      padding: 3vh 3vw;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox img {
+      max-width: 100%;
+      max-height: 86vh;
+      border-radius: 3px;
+      box-shadow: 0 8px 44px rgba(0, 0, 0, .55);
+      cursor: default;
+    }
+    #lightbox img[hidden] { display: none; }
+    .lb-caption {
+      font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+                   "Liberation Mono", monospace;
+      font-size: .75em;
+      letter-spacing: .04em;
+      color: #ddd;
+      margin-top: .9em;
+      text-align: center;
+    }
+    .lb-loading {
+      font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+                   "Liberation Mono", monospace;
+      font-size: .8em;
+      color: #aaa;
+    }
+    .lb-close {
+      position: absolute;
+      top: 1.2vh;
+      right: 1.6vw;
+      font-family: sans-serif;
+      font-size: 1.8em;
+      line-height: 1;
+      color: #ddd;
+      background: none;
+      border: 0;
+      padding: .2em .4em;
+      cursor: pointer;
+    }
+    .lb-close:hover { color: #fff; }
+
+    /* --- data tables --------------------------------------------------- */
+    table.metrics,
+    table.ratings {
+      width: 100%;
+      margin-bottom: 2em;
+    }
+    table.metrics th,
+    table.ratings th {
+      font-size: .82em;
+      letter-spacing: .04em;
+      text-align: left;
+    }
+    table.metrics { table-layout: fixed; }
+    table.metrics td { font-size: .9em; }
+    table.metrics th { padding: .3em .7em; }
+    table.metrics td { padding: .35em .7em; }
+    /* agent names wrap rather than truncate when the column gets tight */
+    td.agent { hyphens: none; }
+    /* raw counts: monospace, right-aligned so the columns line up */
+    th.num { text-align: right; }
+    td.num {
+      font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+                   "Liberation Mono", monospace;
+      font-size: .78em;
+      text-align: right;
+      white-space: nowrap;
+      color: #333;
+    }
+    td.num.none { color: #bbb; }   /* metric not reported by that harness */
+    /* an agent reported over more than one block: centre the shared cells */
+    td[rowspan] { vertical-align: middle; }
+    /* the harvey balls need a font that actually has the glyphs */
+    table.ratings td:not(.agent) {
+      font-family: "Apple Symbols", "Segoe UI Symbol", "Noto Sans Symbols2",
+                   "DejaVu Sans", sans-serif;
+      font-size: 1.15em;
+      line-height: 1.2;
+    }
+
+    /* --- footnotes ----------------------------------------------------- */
+    .footnotes {
+      font-size: .85em;
+      color: #555;
+      margin-top: 3.5em;
+    }
+    .footnotes p { overflow-wrap: anywhere; }
+
+    /* --- narrow screens ------------------------------------------------- */
+    @media only screen and (max-width: 680px) {
+      .shots-wrap,
+      .metrics-wrap {
+        left: 0;
+        transform: none;
+        width: 100%;
+      }
+      /* screenshots stack full width, each keeping its column heading */
+      table.app-shots,
+      table.app-shots tbody,
+      table.app-shots tr { display: block; }
+      table.app-shots thead { display: none; }
+      table.app-shots td {
+        display: block;
+        width: auto;
+        padding: 0 0 1.5em;
+      }
+      table.app-shots td::before {
+        content: attr(data-label);
+        display: block;
+        font-size: .8em;
+        font-weight: bold;
+        letter-spacing: .04em;
+        color: #666;
+        border-bottom: 1px solid #e4e4e4;
+        padding-bottom: .25em;
+        margin-bottom: .5em;
+      }
+    }
+
+    /* Eight columns of 7-8 digit counts need ~860px before they start
+       colliding, so below that the token grids scroll sideways instead of
+       squeezing, with the agent column pinned so rows stay identifiable. */
+    @media only screen and (max-width: 890px) {
+      .metrics-wrap { overflow-x: auto; }
+      table.metrics { min-width: 860px; }
+      table.metrics th:first-child,
+      table.metrics td.agent {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        background: #fff;
+        box-shadow: 1px 0 0 #ddd;
+      }
+      table.metrics th:first-child { background: #eee; }
+    }
+  </style>
+</head>
+<body>
+<h1>Evaluating AI Agents as Products</h1>
+<p class="lede"><em>Coding benchmarks evaluate AI agents on well specified tasks.
+Open ended qualitative checks show which can make the nicest demo but
+leave enough flexibility that they don’t measure the rigidity of real
+work. Neither capture human-in-the-loop performance nor do they speak to
+efficiency and productivity. To explore how we can better measure how
+“useful” AI agents are, I introduce three tasks to generate data
+labeling interfaces in an (ideally) short interactive coding session.
+The specified interface functionality combines mandatory requirements
+with open ended choices, allowing us to evaluate efficiency,
+collaboration, and taste, providing a proxy for how well the agents
+perform as tools in real coding situations. Here I introduce the tasks
+and evaluate five agents – three smaller local models and two near
+frontier.</em></p>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>Aug 15, 2026</a></p>
+<p>When we started doing ML, benchmarks scores pretty closely captured
+the performance of a model. If a classifier had a certain precision and
+recall, as long as the data distribution didn’t change this told you
+what you needed to know. I think AI’s origins in simpler ML models, and
+the current narrow gap between academic advances and commercial
+offerings has kept an outsized emphasis on benchmarks.</p>
+<p>Benchmarks can be most useful when (a) we want to compare
+<em>models</em> and (b) we are in a period of rapid model advancement.
+And in the brief history of LLMs, model performance was probably a
+suitable proxy for product performance. Anything you build on GPT-5.6 is
+going to be better than if you’d built it in GPT-4. A known issue of
+course if that benchmarks saturate and all models can basically “ace”
+old benchmarks making them useless for comparison. Less discussed is
+that the entire concept of model benchmarking may be saturating in many
+applications, and the remaining alpha is in more product-like qualities
+around user experience and the elusive “taste”.</p>
+<p>The Artificial Intelligence Coding Agent Index<a href="#fn1"
+class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> is
+a composite index of three public benchmark datasets (DeepSWE,
+Terminal-Bench V2, SWE-Atlas-QnA). The first two of these have agents do
+software engineering tasks with well defined expected behavior. The last
+one has the agent answer questions about a codebase.</p>
+<p>I would contend that such evaluations no longer align with how
+effective a given tool (say Cursor or Codex or Claude Code) is at
+improving developer outcomes (saving time, shipping more, etc). Well
+specified tasks test for a different set of behaviors than more
+open-ended real-world problems where taste and judgment are necessary<a
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>. Furthermore, we’re at a point where
+most agents can basically solve any task when a human is in the loop.
+Finding tasks they can’t solve becomes increasingly about tricking them
+or identifying edge cases instead of testing which is more useful in the
+real world. The relevant question is no longer “can it do this” like it
+was in the early days, but how efficiently does it do it (with a human
+in the loop), does it exercise good judgement that leads to a quality
+product, does it provide helpful input as a co-worker, etc.</p>
+<p>On the other hand, there is a danger in open-ended testing without
+clear goals. Recently Andrej Karpathy suggested prompting for video
+generation<a href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a>, and there are analogous coding
+focused tasks like one-shotting video games. These make cool demos but
+are too open ended to realistically test utility. AI’s perennial problem
+is that it’s great for demos but real world considerations take the wind
+out of its sails. A Netlify blog post also compared how well models
+could single-shot web design tasks<a href="#fn4" class="footnote-ref"
+id="fnref4" role="doc-noteref"><sup>4</sup></a>. This has a similar
+problem, it doesn’t test against any subjective use criteria, and it
+only measures single-shot performance, not interaction, so doesn’t
+obviously predict how useful a tool will be when used with a human in
+the loop.</p>
+<p>To explore how useful different coding agents (consisting of a model
+and harness) are, I wanted a set of tasks that was specific enough to
+have constraints and necessary success criteria, while also involving
+sufficient flexibility to let models demonstrate their taste. Crucially
+I also wanted real useability criteria. I didn’t want to just build
+something and say it passed the tests and looked well designed, I wanted
+there to be the equivalent of a user that could decide if the end result
+met their needs. The goal is not to fully simulate real use, but to find
+proxy tasks that give a sense of how efficient and effective the tools
+are in real situations by simulating meaningful interaction and success
+criteria.</p>
+<p>Based on these criteria I experimented with tasks requiring agents to
+build software in support of dataset labeling or annotation. This is a
+task I use AI for frequently in real life. It involves clear functional
+criteria – a user is presented with a set of data points and needs to
+make some determination(s) about each (add a label), so the software
+must support that. It involves taste and judgement in terms of how the
+material is presented, the labeling flow, how progress is saved, etc.
+And its ultimate success rests in how effectively the user is able to
+use the software to perform the labeling.</p>
+<h2>Tasks</h2>
+<p>General criteria: some simple tasks requiring human judgement that
+could be completed rapidly. Sufficient volume to get a feel for how
+efficiently a user can run through many samples. Meaningful upside in
+how the information could be laid out to support the user in their
+task.</p>
+<ol class="tasks" type="1">
+<li>
+<p>Class labeling: I extracted 75 sentences each from Wikipedia
+articles about (a) the Dot-Com bubble and (b) the 2008 financial crisis.
+The goal is to build an interface to help the user label which article
+the sentence came from (assuming they can tell by reading it).</p>
+<p class="prompt-label">Starting prompt:</p>
+<div class="prompt">In this directory is a file that contains random
+sentences from wikipedia articles about either the 2008 financial crisis
+or the dotcom bubble. I want to make an application that displays this
+data for a person to review and manually label as one or the other. The
+data is labeled but ignore those labels. Our goal is to allow the user
+to review and decide as quickly as possible the article from which each
+sentence originates</div>
+</li>
+<li>
+<p>Ranking: For 50 unicode characters (♠, ♥, ☀, ☃, etc) I asked an
+LLM (Qwen 3.6 35B A3B) to generate five attempts at a .svg line drawing.
+The goal is to build an interface that lets the user rank the attempts
+for each character.</p>
+<p class="prompt-label">Starting prompt:</p>
+<div class="prompt">in ./output are 50 folders each corresponding to a
+symbol and containing five attempts by an LLM at drawing that symbol as
+a svg. Can you make me a ranking interface that lets me view the five
+for each symbol and rank them from best to worst. Don't overfit anything
+to the data, it should work for other shapes in this format as well.</div>
+</li>
+<li>
+<p>Code editing and annotation: I generated 100 python code snippets
+consisting of functions with various syntax errors introduced. The goal
+is to build an interface that lets the user correct the code, and
+annotate / validate the location of the error, given the error message
+from the python interpreter.</p>
+<p class="prompt-label">Starting prompt:</p>
+<div class="prompt">dataset.json contains a list of 100 python code
+snippets (functions) that have errors introduced. Considering only the
+code and the "error display" that shows the error python would generate,
+write an app that a human reviewer could use to confirm the error by
+adding an annotation of the location and updating the error message if
+necessary, and edit the code to make it correct. Think of this as a test
+for the human to use python’s error message to confirm what is wrong and
+make it right.</div>
+</li>
+</ol>
+<p><strong>Test Setup:</strong> The models tested so far are Z.ai GLM 5.2, Qwen 3.6 35B
+A3B (8-bit quant), Laguna Poolside 2.1 (4-bit quant), Meta Muse Glimmer
+(8-bit quant), and Claude Opus 5. Claude was used with Claude Code and
+the rest were used with stock Pi (another coding harness). I used
+whatever the default thinking was for each and this isn’t meant to be a
+detailed comparison between thinking modes. The models were selected
+based on ones I wanted to use for one reason or another. Claude because
+it’s generally good and I’ve used it for a long time, GLM as a modern
+open weights model, and the three smaller ones as examples I can run
+locally with different tradeoffs between active and total
+parameters.</p>
+<p><strong>Test Procedure:</strong> For each of the three tasks I used GLM to build a
+reference implementation in an interactive session beginning with the
+prompts mentioned earlier. I used each of these sessions to decide on an
+appropriate end-state that captured the base functionality I wanted to
+see in the application. I approached the task as I would in a real
+development setting, iteratively running the application, identifying
+issues or refinements, and them prompting to address them.</p>
+<p>For the subsequent agents I replayed, to the extent possible, the
+sessions, beginning with the same starting prompt, and using the same
+follow-ups when applicable, but adjusting as necessary for different
+issues that arose.</p>
+<p><strong>Evaluation:</strong> We can look at the number of tokens used and the number
+of user turns required as measures of efficiency and native taste. Fewer
+turns indicates the model arrives at what I consider a good result
+faster, despite the underspecification of the initial prompt. The more
+interesting part of the evaluation comes from actually experiencing the
+interaction and the output and is mostly manual and qualitative. This
+may be unappealing in comparison with automated benchmarks, or feel like
+a cop-out. The goal is to replicate “product testing” however, which in
+other domains, say running shoes or cars, ultimately boils down to using
+something and seeing how well it works for you. One quantitative measure
+that this method supports but was not attempted is actually timing how
+efficiently and accurately the downstream data labeling task can be
+completed using the different tools. This, combined with the development
+time and manual steering required, could give a firmer quantitative
+picture of how effective the different agents are.</p>
+<p>In the qualitative evaluation we look for what stylistic choices were
+made to support the tasks, how much intuition or common sense the agent
+had about the task, and the apparent ease of use of the developed
+solution. We also consider the overall experience and impression using
+the agent. In running the evals, they felt very representative of the
+kind of interactions I have with coding agents, including the debugging
+side quests and need for steering.</p>
+<p>Quantitatively, we can also measure how many turns were taken and how
+many tokens were used, both proxies for efficiency.</p>
+<h2>Apps</h2>
+<p>Below are screenshots of the three applications generated with each
+model</p>
+<h3>Z.ai GLM 5.2 / Pi</h3>
+<div class="shots-wrap">
+<table class="app-shots">
+<thead>
+<tr>
+<th>Class Labeling</th>
+<th>Ranking</th>
+<th>Editing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Class Labeling"><a class="shot" href="gifs/glm_classify.gif"
+data-caption="Class Labeling — Z.ai GLM 5.2 / Pi"><img
+src="pics/thumbs/classifier_glm.jpg" width="760" height="381" loading="lazy"
+alt="Class labeling app built by Z.ai GLM 5.2 with Pi" /></a></td>
+<td data-label="Ranking"><a class="shot" href="gifs/glm_sort.gif"
+data-caption="Ranking — Z.ai GLM 5.2 / Pi"><img
+src="pics/thumbs/sorter_glm.jpg" width="760" height="381" loading="lazy"
+alt="Ranking app built by Z.ai GLM 5.2 with Pi" /></a></td>
+<td data-label="Editing"><a class="shot" href="gifs/glm_syntax.gif"
+data-caption="Editing — Z.ai GLM 5.2 / Pi"><img
+src="pics/thumbs/annot_glm.jpg" width="760" height="383" loading="lazy"
+alt="Code editing and annotation app built by Z.ai GLM 5.2 with Pi" /></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>On the class labeling task, GLM needed to be told to add a sidebar,
+took too long thinking and reached the default token limit twice, and
+initially messed up the syntax highlighting, breaking the layout
+whenever it highlighted a word. It particularly struggled when asked to
+come up with a way of highlighting words and waffled on trying to make a
+word list. It also made (in my view) a poor design choice in picking red
+and green for the two class colors, given the good/bad connotation of
+these two colors.</p>
+<p>For the ranking task, GLM made near black-on-black interface to draw
+the pictures at first which made it impossible to see. It also displayed
+a bunch of metadata that had no relevance to the task.</p>
+<p>On the editing task, GLM had some initial scroll and layout issues,
+and displayed extraneous information – the instructions specify that
+this is a test using just the python error message but it displayed
+other info anyway.</p>
+<p>Overall GLM generated easy to use applications and made good
+stylistic choices. For example, it up front made the sentence large and
+easy to read for the class labeling task. For the ranking task, there
+was a but if busyness in the interface and the dark mode made it hard to
+read, though I retrospectively noticed it added a light / dark toggle.
+The editing interface requires scrolling to see the whole main panel
+which makes it slower to use.</p>
+<h3>Qwen 3.6 35B A3B / Pi</h3>
+<div class="shots-wrap">
+<table class="app-shots">
+<thead>
+<tr>
+<th>Class Labeling</th>
+<th>Ranking</th>
+<th>Editing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Class Labeling"><a class="shot" href="gifs/qwen_classify.gif"
+data-caption="Class Labeling — Qwen 3.6 35B A3B / Pi"><img
+src="pics/thumbs/classiger_qwen.jpg" width="760" height="383" loading="lazy"
+alt="Class labeling app built by Qwen 3.6 35B A3B with Pi" /></a></td>
+<td data-label="Ranking"><a class="shot" href="gifs/qwen_sort.gif"
+data-caption="Ranking — Qwen 3.6 35B A3B / Pi"><img
+src="pics/thumbs/sorter_qwen.jpg" width="760" height="381" loading="lazy"
+alt="Ranking app built by Qwen 3.6 35B A3B with Pi" /></a></td>
+<td data-label="Editing"><a class="shot" href="gifs/qwen_syntax.gif"
+data-caption="Editing — Qwen 3.6 35B A3B / Pi"><img
+src="pics/thumbs/annot_qwen.jpg" width="760" height="380" loading="lazy"
+alt="Code editing and annotation app built by Qwen 3.6 35B A3B with Pi" /></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Qwen didn’t make a great use of space in the class labeling app, the
+sentence to be reviewed was smaller than it needed to be. Similar to
+GLM, Qwen didn’t initially add a scroll bar, and messed it up on its
+first pass. It also had trouble with the layout when applying syntax
+highlighting.</p>
+<p>On the ranking task, Qwen didn’t fully finish according to what I
+wanted but completed something that worked. It ran into errors that
+needed multiple human-in-the-loop debugging rounds, first with loading
+the pictures and then dragging and dropping. It also initially displayed
+the pictures in black-on-black.</p>
+<p>For the editing task, Qwen initially shared information it was not
+supposed to with the user, required steering on the error highlighting,
+had an error in the button states that needed manual correction</p>
+<h3>Laguna Poolside 2.1 / Pi</h3>
+<div class="shots-wrap">
+<table class="app-shots">
+<thead>
+<tr>
+<th>Class Labeling</th>
+<th>Ranking</th>
+<th>Editing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Class Labeling"><a class="shot" href="gifs/laguna_classify.gif"
+data-caption="Class Labeling — Laguna Poolside 2.1 / Pi"><img
+src="pics/thumbs/classiger_laguna.jpg" width="760" height="386" loading="lazy"
+alt="Class labeling app built by Laguna Poolside 2.1 with Pi" /></a></td>
+<td data-label="Ranking"><a class="shot" href="gifs/laguna_sort.gif"
+data-caption="Ranking — Laguna Poolside 2.1 / Pi"><img
+src="pics/thumbs/sorter_laguna.jpg" width="760" height="381" loading="lazy"
+alt="Ranking app built by Laguna Poolside 2.1 with Pi" /></a></td>
+<td data-label="Editing"><a class="shot" href="gifs/laguna_syntax.gif"
+data-caption="Editing — Laguna Poolside 2.1 / Pi"><img
+src="pics/thumbs/annot_laguna.jpg" width="760" height="382" loading="lazy"
+alt="Code editing and annotation app built by Laguna Poolside 2.1 with Pi" /></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For the class labeling task, Laguna initially built a terminal
+application. It did however respond to the prompt to create a web-app
+but adding a sidebar automatically. It didn’t display the full sentences
+initially which is poor judgement in an application specifically for
+reviewing sentences. Laguna also picked red for one of the class
+colors.</p>
+<p>For the ranking task, Laguna made only minor judgement errors such as
+displaying the images in a stack that needed scrolling at first.</p>
+<p>Laguna experienced a number of problems on the annotation task:
+scroll and layout issues, timeout due to excessive thinking, errors
+highlighting error location and with persistence, and an issue with
+loading an external library (pyodide) that required some back and
+forth.</p>
+<h3>Meta Muse Glimmer / Pi</h3>
+<div class="shots-wrap">
+<table class="app-shots">
+<thead>
+<tr>
+<th>Class Labeling</th>
+<th>Ranking</th>
+<th>Editing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Class Labeling"><a class="shot" href="gifs/muse_classify.gif"
+data-caption="Class Labeling — Meta Muse Glimmer / Pi"><img
+src="pics/thumbs/classiger_muse.jpg" width="760" height="383" loading="lazy"
+alt="Class labeling app built by Meta Muse Glimmer with Pi" /></a></td>
+<td data-label="Ranking"><a class="shot" href="gifs/muse_sort.gif"
+data-caption="Ranking — Meta Muse Glimmer / Pi"><img
+src="pics/thumbs/sorter_muse.jpg" width="760" height="380" loading="lazy"
+alt="Ranking app built by Meta Muse Glimmer with Pi" /></a></td>
+<td data-label="Editing"><a class="shot" href="gifs/muse_syntax.gif"
+data-caption="Editing — Meta Muse Glimmer / Pi"><img
+src="pics/thumbs/annot_muse.jpg" width="760" height="380" loading="lazy"
+alt="Code editing and annotation app built by Meta Muse Glimmer with Pi" /></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Muse also generated a terminal app to start with for the class
+labeling task and didn’t initially add a side scroll bar. It initially
+didn’t show how each sample had been labeled and only that it had been.
+It performed well on the syntax highlighting in that it pursued a quick,
+simple solution. GLM, Qwen, and Laguna each took an outsized amount of
+thought to come up with highlighting schemes.</p>
+<p>For the ranking task, Muse took additional back and forth to resolve
+some minor bugs that surfaced about display and dragging.</p>
+<p>On the annotation task, Muse didn’t initially add a sidebar, some
+loading issues, left in error information it shouldn’t have, and popped
+up an alert between evals which slows the user down.</p>
+<h3>Claude Opus 5 / Claude Code</h3>
+<div class="shots-wrap">
+<table class="app-shots">
+<thead>
+<tr>
+<th>Class Labeling</th>
+<th>Ranking</th>
+<th>Editing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label="Class Labeling"><a class="shot" href="gifs/claude_classify.gif"
+data-caption="Class Labeling — Claude Opus 5 / Claude Code"><img
+src="pics/thumbs/classiger_claude.jpg" width="760" height="381" loading="lazy"
+alt="Class labeling app built by Claude Opus 5 with Claude Code" /></a></td>
+<td data-label="Ranking"><a class="shot" href="gifs/claude_sort.gif"
+data-caption="Ranking — Claude Opus 5 / Claude Code"><img
+src="pics/thumbs/sorter_claude.jpg" width="760" height="382" loading="lazy"
+alt="Ranking app built by Claude Opus 5 with Claude Code" /></a></td>
+<td data-label="Editing"><a class="shot" href="gifs/claude_syntax.gif"
+data-caption="Editing — Claude Opus 5 / Claude Code"><img
+src="pics/thumbs/annot_claude.jpg" width="760" height="382" loading="lazy"
+alt="Code editing and annotation app built by Claude Opus 5 with Claude Code" /></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>On the class labeling task, Claude also didn’t add a scroll bar at
+first, otherwise it correctly built the app with minimal steering.</p>
+<p>Claude mostly single-shotted the ranking task, the only issue was
+that it focused on speed only (clicking the pictures in order to rank)
+but didn’t include the fallback cases of moving them around from the
+outset.</p>
+<p>For the annotation task, Claude added extra information that should
+have been hidden from the user, and lacked judgement about sidebar
+labels, labelling by error type when they were substantially all the
+same error type.</p>
+<h2>Efficiency</h2>
+<p>The tables below compare token counts and turns for the different
+tasks. Note that Claude reports its token use slightly differently and
+most models don’t differentiate between output and reasoning tokens.
+Muse consistently uses a smaller number of tokens than the others, while
+taking about an average number of turns. Claude is always the fewest
+turns, largely because it includes lots of internal testing and
+debugging within turns. While it doesn’t appear overly token-heavy, the
+usage here apparently cost ~$50. Both Qwen and Laguna had instances
+where the interaction took an outsized number of turns due to some bug
+that required iteration.</p>
+<h3>Class Labeling</h3>
+<div class="metrics-wrap">
+<table class="metrics">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 8%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th class="num">Input</th>
+<th class="num">Output</th>
+<th class="num">Reasoning</th>
+<th class="num">Cache read</th>
+<th class="num">Cache creation</th>
+<th class="num">Total</th>
+<th class="num">Turns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="agent">GLM 5.2 / Pi</td>
+<td class="num">89,139</td>
+<td class="num">127,572</td>
+<td class="num">106,284</td>
+<td class="num">1,403,456</td>
+<td class="num none">—</td>
+<td class="num">1,620,167</td>
+<td class="num">6</td>
+</tr>
+<tr>
+<td class="agent" rowspan="2">Qwen 3.6 35B A3B / Pi</td>
+<td class="num">107,722</td>
+<td class="num">33,518</td>
+<td class="num">0</td>
+<td class="num">2,204,257</td>
+<td class="num none">—</td>
+<td class="num">2,345,497</td>
+<td class="num" rowspan="2">9</td>
+</tr>
+<tr>
+<td class="num">162,784</td>
+<td class="num">34,994</td>
+<td class="num">0</td>
+<td class="num">2,535,413</td>
+<td class="num none">—</td>
+<td class="num">2,733,191</td>
+</tr>
+<tr>
+<td class="agent">Laguna 2.1 / Pi</td>
+<td class="num">90,829</td>
+<td class="num">109,040</td>
+<td class="num">0</td>
+<td class="num">4,253,740</td>
+<td class="num none">—</td>
+<td class="num">4,453,609</td>
+<td class="num">5</td>
+</tr>
+<tr>
+<td class="agent">Muse Glimmer / Pi</td>
+<td class="num">16,405</td>
+<td class="num">19,201</td>
+<td class="num">0</td>
+<td class="num">663,177</td>
+<td class="num none">—</td>
+<td class="num">698,783</td>
+<td class="num">5</td>
+</tr>
+<tr>
+<td class="agent">Opus 5.0 / Claude Code</td>
+<td class="num">281</td>
+<td class="num">155,820</td>
+<td class="num none">—</td>
+<td class="num">11,022,272</td>
+<td class="num">165,744</td>
+<td class="num none">—</td>
+<td class="num">4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3>Ranking</h3>
+<div class="metrics-wrap">
+<table class="metrics">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 8%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th class="num">Input</th>
+<th class="num">Output</th>
+<th class="num">Reasoning</th>
+<th class="num">Cache read</th>
+<th class="num">Cache creation</th>
+<th class="num">Total</th>
+<th class="num">Turns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="agent">GLM 5.2 / Pi</td>
+<td class="num">116,016</td>
+<td class="num">84,130</td>
+<td class="num">48,363</td>
+<td class="num">2,562,304</td>
+<td class="num none">—</td>
+<td class="num">2,762,450</td>
+<td class="num">4</td>
+</tr>
+<tr>
+<td class="agent">Qwen 3.6 35B A3B / Pi</td>
+<td class="num">141,296</td>
+<td class="num">75,554</td>
+<td class="num">0</td>
+<td class="num">5,533,304</td>
+<td class="num none">—</td>
+<td class="num">5,750,154</td>
+<td class="num">14</td>
+</tr>
+<tr>
+<td class="agent">Laguna 2.1 / Pi</td>
+<td class="num">70,904</td>
+<td class="num">88,254</td>
+<td class="num">0</td>
+<td class="num">6,716,033</td>
+<td class="num none">—</td>
+<td class="num">6,875,191</td>
+<td class="num">5</td>
+</tr>
+<tr>
+<td class="agent">Muse Glimmer / Pi</td>
+<td class="num">25,637</td>
+<td class="num">34,620</td>
+<td class="num">0</td>
+<td class="num">4,809,671</td>
+<td class="num none">—</td>
+<td class="num">4,869,928</td>
+<td class="num">10</td>
+</tr>
+<tr>
+<td class="agent">Opus 5.0 / Claude Code</td>
+<td class="num">199</td>
+<td class="num">166,573</td>
+<td class="num none">—</td>
+<td class="num">7,528,675</td>
+<td class="num">697,690</td>
+<td class="num none">—</td>
+<td class="num">2</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h3>Editing</h3>
+<div class="metrics-wrap">
+<table class="metrics">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 8%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th class="num">Input</th>
+<th class="num">Output</th>
+<th class="num">Reasoning</th>
+<th class="num">Cache read</th>
+<th class="num">Cache creation</th>
+<th class="num">Total</th>
+<th class="num">Turns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="agent">GLM 5.2 / Pi</td>
+<td class="num">97,851</td>
+<td class="num">89,789</td>
+<td class="num">53,014</td>
+<td class="num">4,403,648</td>
+<td class="num none">—</td>
+<td class="num">4,591,288</td>
+<td class="num">6</td>
+</tr>
+<tr>
+<td class="agent">Qwen 3.6 35B A3B / Pi</td>
+<td class="num">108,892</td>
+<td class="num">38,328</td>
+<td class="num">0</td>
+<td class="num">4,520,312</td>
+<td class="num none">—</td>
+<td class="num">4,667,532</td>
+<td class="num">9</td>
+</tr>
+<tr>
+<td class="agent">Laguna 2.1 / Pi</td>
+<td class="num">130,250</td>
+<td class="num">291,206</td>
+<td class="num">0</td>
+<td class="num">7,919,440</td>
+<td class="num none">—</td>
+<td class="num">8,340,896</td>
+<td class="num">18</td>
+</tr>
+<tr>
+<td class="agent">Muse Glimmer / Pi</td>
+<td class="num">34,558</td>
+<td class="num">28,456</td>
+<td class="num">0</td>
+<td class="num">5,200,109</td>
+<td class="num none">—</td>
+<td class="num">5,263,123</td>
+<td class="num">8</td>
+</tr>
+<tr>
+<td class="agent">Opus 5.0 / Claude Code</td>
+<td class="num">284</td>
+<td class="num">190,226</td>
+<td class="num none">—</td>
+<td class="num">13,309,141</td>
+<td class="num">626,046</td>
+<td class="num none">—</td>
+<td class="num">3</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2>Overall Impressions</h2>
+<p>Claude + Claude code is clearly the “smartest” and most capable of
+the models, which should be no surprise and shows in its ability to
+nearly single shot many of the tasks, with only minor tweaks necessary,
+and its generally good judgement. What I like the least about it is what
+I call “co-working” – it does way too much useless stuff, particularly
+extensive testing, without asking. This makes any iteration that does
+occur take way longer, and of course uses more tokens. Some people might
+appreciate the rigor, I found it overkill for these tasks and that it
+made it hard to collaborate with. I would have preferred a few extra
+rounds of back and forth than sitting and waiting for it to run yet
+another test of something. It’s important to note that Claude Code
+itself probably plays a big role here, I did not try Claude with Pi and
+this may significantly reduce the testing it does.</p>
+<p><b>Note added in draft: While I didn't use any AI to write this, proofread it, etc., I did get Claude Code to apply some formatting to the HTML version. Ironically it again spent an outsized amount of time running various tests, even when it had clearly read what I wrote above, I felt at some level like it was rubbing it in.</b></p>
+<p>GLM , for all intents and purposes is as capable as Claude for the
+tasks tested here. Claude doesn’t share it’s reasoning tokens so we
+can’t compare it, but GLM felt very verbose, like it waffled a lot
+before coming to decisions. In one case it timed out because it just
+went on thinking instead of ever concluding. My sense is also that it’s
+judgement might be subtly worse than Claude’s – it needed a little more
+steering. Overall it was easy to work with (in Pi) and I appreciated not
+having to sit through any excessive validation. The end result didn’t
+seem any worse for it.</p>
+<p>I will lump Qwen and Laguna together. These are capable small models
+(Laguna is bigger but had to be quantized to fit on my machine), but the
+gap with the frontier models shows on a task like this. Both took
+consistently more steering to get the apps right, and lacked some of the
+judgement the bigger models could exercise. Ultimately the interfaces
+they generated were simpler looking and had subtly lower production
+values, however for an application like this it doesn’t really matter. I
+found the autonomy of the models good – they did their thing but
+involved me as necessary didn’t go off in any side-quests of their own
+(*cough* Claude) and supported me well in debugging. They both also
+think too much and get stuck in long or infinite thinking loops
+sometimes, failing to make a decision.</p>
+<p>Muse came out as I was running the tests and I decided to include it
+to see how it differed from the other two small models. It’s
+particularly unique in how it thinks. It’s extremely terse and to the
+point, has a completely different style (no “Wait, actually…” like all
+the other ones, and generally is very action oriented. This is a dense
+model so is much slower running on my machine, but the overall
+interactions ended up faster than with Qwen or Laguna because of how
+direct it was. I had expected speed to be the biggest barrier to using
+it. In terms of performance, it was as good as or better than the other
+two small models in terms of judgment and the steering it required.</p>
+<p>A summary of overall impressions is below. It's subjective but based on my experience building the different apps and the observations above.</p>
+<table class="ratings" style="width:100%;">
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+<col style="width: 19%" />
+</colgroup>
+<thead>
+<tr>
+<th>Agent</th>
+<th style="text-align: center;">Taste</th>
+<th style="text-align: center;">Co-working</th>
+<th style="text-align: center;">Intelligence</th>
+<th style="text-align: center;">Verbosity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="agent">GLM 5.2 / Pi</td>
+<td style="text-align: center;">◕</td>
+<td style="text-align: center;">●</td>
+<td style="text-align: center;">●</td>
+<td style="text-align: center;">◕</td>
+</tr>
+<tr>
+<td class="agent">Qwen 3.6 35B A3B / Pi</td>
+<td style="text-align: center;">◑</td>
+<td style="text-align: center;">◕</td>
+<td style="text-align: center;">◑</td>
+<td style="text-align: center;">◑</td>
+</tr>
+<tr>
+<td class="agent">Laguna 2.1 / Pi</td>
+<td style="text-align: center;">◑</td>
+<td style="text-align: center;">◕</td>
+<td style="text-align: center;">◑</td>
+<td style="text-align: center;">◔</td>
+</tr>
+<tr>
+<td class="agent">Muse Glimmer / Pi</td>
+<td style="text-align: center;">◕</td>
+<td style="text-align: center;">●</td>
+<td style="text-align: center;">◕</td>
+<td style="text-align: center;">●</td>
+</tr>
+<tr>
+<td class="agent">Opus 5.0 / Claude Code</td>
+<td style="text-align: center;">●</td>
+<td style="text-align: center;">◑</td>
+<td style="text-align: center;">●</td>
+<td style="text-align: center;">◕</td>
+</tr>
+</tbody>
+</table>
+<h2>Conclusions</h2>
+<!-- TODO: conclusions to be written. -->
+Having run these evaluations, I feel personally like I have a good handle on the model’s relative strengths and weaknesses for interactive coding, particularly how relatively productive one can be using the different tools. Historically people have preferred purely quantitative benchmarks when comparing LLMs, including coding agents. I think this will change as we start to care more about the product vs just raw AI ability. Especially now that all of the mainstream models are above a certain bar and can essentially do any task with the right coaching. We’re going to need new “product review” evals, and rely on trusted reviewers, the same way we would with any other product. The examples I’ve shown here are good proxies for real tasks because they combine mandatory functionality with some taste and intangible criteria, and the expectation of a human in the loop. They can be extended, if we wanted to measure real end-to-end performance, by measuring how well as user can use the AI coded apps (labeling speed and accuracy) which can be an appealing property for measuring the value of AI coding agents.
+<h2>Appendix</h2>
+<p>Below are the user turns for the different sessions. While I didn’t
+include the agent turns in the interest of length, the user turns give a
+sense of the interaction.</p>
+<h3>Class Labeling</h3>
+<h4>Z.ai GLM 5.2 / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">In this directory is a file that contains random sentences from
+wikipedia articles about either the 2008 financial crisis or the dotcom
+bubble. I want to make an application that displays this data for a
+person to review and manually label as one or the other. The data is
+labeled but ignore those labels. Our goal is to allow the user to review
+and decide as quickly as possible the article from which each sentence
+originates</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you add a panel on the left that contains a scrollable list of
+all the sentences so we can rapidly move between them?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Can you add some heuristic syntax highlighting to make it
+easier for the user to tell at a glance some of the features that might
+predict which article the sentence came from? Don't bother doing any
+testing of how well they perform (since we don't have a train test split
+that would be cheating), let's just experiment with some basic
+highlighting. For example anything that's a year would be telling, words
+related to finance or mortgages vs words related to technology would be
+telling. Before doing that, please change the coloring away from
+red/green (which to me implies good / bad) to something more neutral but
+still with good contrast</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">You errored due to max token limit, keep going please</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK there have been two passes where you reached to max token limit
+overthinking the heuristics to use. I'm just looking for a simple set of
+words or terms to highlight, it doesn't have to be exhaustive or 100%
+correct, it should just be a net help to the user. Err on the side of
+simplicity and come up with some basic highlighting rules without
+overthinking</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The highlighted words are in their own divs or something that don't
+flow with the rest of the sentence and the text wraps within them, so
+instead of just appearing as highlighted words they completely change
+the layout of the text and make it unreadable</div>
+</div>
+<h4>Qwen 3.6 35B A3B / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">In this directory is a file that contains random sentences from
+wikipedia articles about either the 2008 financial crisis or the dotcom
+bubble. I want to make an application that displays this data for a
+person to review and manually label as one or the other. The data is
+labeled but ignore those labels. Our goal is to allow the user to review
+and decide as quickly as possible the article from which each sentence
+originates</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you add a panel on the left that contains a scrollable list of
+all the sentences so we can rapidly move between them?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">It seems like I can't actually navigate with the side bar, when I
+click on a sentence it doesn't go there, it just advances to the next
+one as I grade them</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Can you add some heuristic syntax highlighting to make it
+easier for the user to tell at a glance some of the features that might
+predict which article the sentence came from? Don't bother doing any
+testing of how well they perform (since we don't have a train test split
+that would be cheating), let's just experiment with some basic
+highlighting. For example anything that's a year would be telling, words
+related to finance or mortgages vs words related to technology would be
+telling.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The highlighted words are in their own divs or something that don't
+flow with the rest of the sentence and the text wraps within them, so
+instead of just appearing as highlighted words they completely change
+the layout of the text and make it unreadable</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">There's still something wrong. The text wraps separately in different
+sections. It's like there is only ever one row that gets divided into
+columns, the highlighted words go in a column, and then the interstitial
+non-highlighted text goes in adjacent columns and wraps when its too
+long to fit the column which is always</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great that worked. Now is there a way to export the data as a json
+once it's labeled?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you make it so I can download it at any intermediate stage and
+not just when done?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">It looks like I'm stuck on the done screen now when I load the app
+and not able to label any</div>
+</div>
+<h4>Laguna Poolside 2.1 / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">In this directory is a file that contains random sentences from
+wikipedia articles about either the 2008 financial crisis or the dotcom
+bubble. I want to make an application that displays this data for a
+person to review and manually label as one or the other. The data is
+labeled but ignore those labels. Our goal is to allow the user to review
+and decide as quickly as possible the article from which each sentence
+originates</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK that's a good start - I want to be able to move back and forth
+more easily though and not just step through. Can we make this into a
+web app to give some more flexibility?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK looking good. I noticed it doens't display the full sentences on
+the web app, they get truncated after a certain length. Can you fix that
+please?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Can you add some heuristic syntax highlighting to make it
+easier for the user to tell at a glance some of the features that might
+predict which article the sentence came from? Don't bother doing any
+testing of how well they perform (since we don't have a train test split
+that would be cheating), let's just experiment with some basic
+highlighting. For example anything that's a year would be telling, words
+related to finance or mortgages vs words related to technology would be
+telling. Before doing that, please change the coloring away from using
+red (which to me implies bad) to something more neutral but still with
+good contrast</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Keep going</div>
+</div>
+<h4>Meta Muse Glimmer / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">In this directory is a file that contains random sentences from
+wikipedia articles about either the 2008 financial crisis or the dotcom
+bubble. I want to make an application that displays this data for a
+person to review and manually label as one or the other. The data is
+labeled but ignore those labels. Our goal is to allow the user to review
+and decide as quickly as possible the article from which each sentence
+originates</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK that's a good start - I want to be able to move back and forth
+more easily though and not just step through. Can we make this into a
+web app to give some more flexibility?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you add a panel on the left that contains a scrollable list of
+all the sentences so we can rapidly move between them? Also I'd like to
+be able to see which way a sample was classified when I go back to it,
+right now it looks like they all just get highlighted in yellow to
+indicate they have been labeled but I don't see the actual label
+anywhere</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Can you add some heuristic syntax highlighting to make it
+easier for the user to tell at a glance some of the features that might
+predict which article the sentence came from? Don't bother doing any
+testing of how well they perform (since we don't have a train test split
+that would be cheating), let's just experiment with some basic
+highlighting. For example anything that's a year would be telling, words
+related to finance or mortgages vs words related to technology would be
+telling.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The operation stopped for some reason, I may have hit escape by
+accident</div>
+</div>
+<h4>Claude Opus 5 / Claude Code</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">In this directory is a file that contains random sentences from
+wikipedia articles about either the 2008 financial crisis or the dotcom
+bubble. I want to make an application that displays this data for a
+person to review and manually label as one or the other. The data is
+labeled but ignore those labels. Our goal is to allow the user to review
+and decide as quickly as possible the article from which each sentence
+originates</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you add a panel on the left that contains a scrollable list of
+all the sentences so we can rapidly move between them?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Can you add some heuristic syntax highlighting to make it
+easier for the user to tell at a glance some of the features that might
+predict which article the sentence came from? Don't bother doing any
+testing of how well they perform (since we don't have a train test split
+that would be cheating), let's just experiment with some basic
+highlighting. For example anything that's a year would be telling, words
+related to finance or mortgages vs words related to technology would be
+telling.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Is there a way to export the current progress back to a json? I
+didn't see anything</div>
+</div>
+<h3>Ranking</h3>
+<h4>Z.ai GLM 5.2 / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">in ./output are 50 folders each corresponding to a symbol and
+containing five attempts by an LLM at drawing that symbol as a svg. Can
+you make me a ranking interface that lets me view the five for each
+symbol and rank them from best to worst. Don't overfit anything to the
+data, it should work for other shapes in this format as well.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">I can barely see the shapes, it looks like they are drawn in a thin
+black line on a black and dark blue checkered background, can you make
+them thicker and add contrast please</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The metadata about each drawing isn't really important to assessing
+quality, and right now the UI is a bit clumsy. I want to be able to sort
+them as fast as possible, can we modify it so the initial images are
+displayed and can be dragged into a row of slots below that correspond
+to their rank order?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks good, one last minor thing, can you make clicking on an image
+in the top row default to moving it to the next available rank, so if
+the user wanted to they could just click them all in rank order (best to
+worst) and it would complete the task without needing to drag. They
+should still be able to move them around as before if they want</div>
+</div>
+<h4>Qwen 3.6 35B A3B / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">in ./output are 50 folders each corresponding to a symbol and
+containing five attempts by an LLM at drawing that symbol as a svg. Can
+you make me a ranking interface that lets me view the five for each
+symbol and rank them from best to worst. Don't overfit anything to the
+data, it should work for other shapes in this format as well.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">It runs but all I ever see is "loading" - is it supposed to take a
+really long time?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The spinner spins forever, there is an uncaught syntax error, invalid
+assignment left-hand side one line 591 of rank.html according to the
+console: card.querySelector('.rank-badge')?.textContent =
+rankings[symSlug] ? 'Ranked' : 'Not ranked';</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">It works but there is a SVG load error (404) for every picture, maybe
+we have the urls wrong?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt"><p>Still seeing e.g.</p>
+<p>SVG load error for output/zap-U26A1/attempt_0.svg Error: HTTP 404</p>
+<p>loadSVG http://localhost:9876/rank.html:374</p></div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt"><p>No more 404s but I still don't see the images and am getting this
+error</p>
+<p>SVG parse error for output/fleur_de_lis-U269C/attempt_2.svg
+TypeError: can't access property "maxWidth", svgEl.style is
+undefined</p></div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">I can barely see the shapes, it looks like they are drawn in a thin
+dark gray line on a black background, can you make them thicker and add
+contrast please</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK great it works. Can you clean it up by making it so we see only
+one set of images at a time, and have a navigation panel on the side
+that lets us move through the different symbols</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Right now the UI is a bit clumsy. I want to be able to sort them as
+fast as possible, can we modify it so the initial images are displayed
+and can be dragged into a row of slots below that correspond to their
+rank order?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks good but the drop part of drag and drop is not working, I can
+drag the cards over but they don't actually stick on the bottom</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">It still doesn't work. Could I be doing something wrong? Is there a
+way to add some debugging so we can see what state it is in an confirm
+it knows when it's being dragged, when it's over a slot, when it's
+released?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt"><p>[CARD-4] dragstart, draggable: true rank.html:641:15</p>
+<p>[CARD-4] setData/getData: 4 rank.html:645:15</p>
+<p>[SLOT-2] dragover 130 rank.html:595:15</p>
+<p>[SLOT-2] dragleave rank.html:601:15</p>
+<p>[SLOT-1] dragover 387 rank.html:595:15</p>
+<p>[SLOT-1] DROP rank.html:605:15</p>
+<p>[SLOT-1] data: 4 rank.html:610:15</p>
+<p>[SLOT-1] -&gt; already placed rank.html:621:17</p>
+<p>[CARD-4] dragend rank.html:649:15</p></div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt"><p>It placed them now I think, including updating the border style, but
+it just doesn't put the picture where it was placed and keeps it in the
+top row</p>
+<p>[CARD-3] dragstart, draggable: true rank.html:641:15</p>
+<p>[CARD-3] setData/getData: 3 rank.html:645:15</p>
+<p>[SLOT-2] dragover 12 rank.html:595:15</p>
+<p>[SLOT-2] dragleave rank.html:601:15</p>
+<p>[SLOT-1] dragover 220 rank.html:595:15</p>
+<p>[SLOT-1] DROP rank.html:605:15</p>
+<p>[SLOT-1] data: 3 rank.html:610:15</p>
+<p>[SLOT-1] -&gt; PLACED attempt 3 rank.html:619:17</p>
+<p>[CARD-3] dragend rank.html:649:15</p></div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">They disappear when plaed but don't actually show up in the bottom
+squares. And they can't be dragged back to the top. I want it to be
+possible to move them around or back up after the've been placed, and to
+see where they are placed</div>
+</div>
+<h4>Laguna Poolside 2.1 / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">in ./output are 50 folders each corresponding to a symbol and
+containing five attempts by an LLM at drawing that symbol as a svg. Can
+you make me a ranking interface that lets me view the five for each
+symbol and rank them from best to worst. Don't overfit anything to the
+data, it should work for other shapes in this format as well.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The overall look and feel is good but right now the images are
+stacked vertically, making it very difficult to sort them as they go off
+the bottom of the page. Can you make then side-by-side?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">I want to be able to sort them as fast as possible, can we modify it
+so the initial images are displayed and can be dragged into a row of
+slots below that correspond to their rank order?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks good, one last minor thing, can you make clicking on an image
+in the top row default to moving it to the next available rank, so if
+the user wanted to they could just click them all in rank order (best to
+worst) and it would complete the task without needing to drag. They
+should still be able to move them around as before if they want</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">One small thing, is there currently a way to export the current state
+as a json? Can you add one?</div>
+</div>
+<h4>Meta Muse Glimmer / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">in ./output are 50 folders each corresponding to a symbol and
+containing five attempts by an LLM at drawing that symbol as a svg. Can
+you make me a ranking interface that lets me view the five for each
+symbol and rank them from best to worst. Don't overfit anything to the
+data, it should work for other shapes in this format as well.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">I want to be able to sort them as fast as possible, can we modify it
+so the initial images are displayed and can be dragged into a row of
+slots below that correspond to their rank order?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Ok looks good but a bit of cleanup: right now the squares can only be
+dragged by the bottom border, can we make it so we can drag them by any
+part? Also, the presentation looks good on the top part, we see the
+pictures nicely and all five fit across the page. On the bottom row, the
+sorting slots are bigger and wrap so only three fit on a row, and when
+the image is dragged into them it becomes smaller and distorted.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks like pi froze on the test</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">There's something wrong with the server, it doesn't respond, I
+checked it manually as well</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks good, one last minor thing, can you make clicking on an image
+in the top row default to moving it to the next available rank, so if
+the user wanted to they could just click them all in rank order (best to
+worst) and it would complete the task without needing to drag. They
+should still be able to move them around as before if they want</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">That worked. Now can you make it so it saves the state automatically
+without needing to press `Save Ranking`? Right now if I sort them and
+click `next` it saves, but if I move manually to another on the nav bar
+it does not</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Now I noticed a few of the svgs don't draw and an error
+message is shown in the pane. For example crescent moon attempt 5 and
+umbrella attempt 1. The message says `This XML file does not appear to
+have any style information associated with it`. I have rendered these
+elsewhere and they worked fine</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Now it just shows the name, e.g. `Attempt 5` in the square, it
+doesn't render the image</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK that's fixed. Now can you make it so the user can bring the images
+back to the starting row once they've all been sorted. If I start
+sorting, I can still bring some back to the original row, but once
+they've all been moved to the ranking row, the original row disappears
+and I can only drag them within the ranked row. I'd prefer if the layout
+stays consistent even when they've all been brought to the bottom
+row</div>
+</div>
+<h4>Claude Opus 5 / Claude Code</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">in ./output are 50 folders each corresponding to a symbol and
+containing five attempts by an LLM at drawing that symbol as a svg. Can
+you make me a ranking interface that lets me view the five for each
+symbol and rank them from best to worst. Don't overfit anything to the
+data, it should work for other shapes in this format as well.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK looks mostly good. I'd like to be able to drag e.g. one to fifth
+place immediately, or more generally move them between any two spots,
+either from the unranked to ranked row or within either row, just to
+make it easier to play with the rankings. I like the click approach,
+that would normally be the way to speedrun it but it should also be
+flexible.</div>
+</div>
+<h3>Editing</h3>
+<h4>Z.ai GLM 5.2 / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">dataset.json contains a list of 100 python code snippets (functions)
+that have errors introduced. Considering only the code and the "error
+display" that shows the error python would generate, write an app that a
+human reviewer could use to confirm the error by adding an annotation of
+the location and updating the error message if necessary, and edit the
+code to make it correct. This of this as a test for the human to use
+pythons error message to confirm what is wrong and make it right.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">There are some scroll issues, the main panel appears blank at the
+top, and when I scroll down I see "loading" and then scrolling much
+further down I see the actual annotation interface. We should just see
+the annotation interface in the main panel without having to scroll,
+once it has loaded</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK, that fixed it. However, the sidebar can only scroll when the
+whole page scrolls. Please make it scroll separately so the annotation
+workflow remains on screen in the main panel but the user can scroll the
+sidebar. I think this was an underlying reason for why previous
+problem.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK great. Now let's hide the error category, as well as the error
+description at the top from the user. The user should only base their
+annotation off of the python error message and the code</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK, two things I see: What is the user supposed to do with
+"annotation status: pending?" can't they just modify and save, right now
+it could be modified but then they need to separately change the status,
+that feels confuising. Second, what purpose does "run code" serve? It
+can only run the original code, for which we already have the error
+message. This could check the message if it was in quesiton, but the
+messages are not in question, we assume they are accurate</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">That's fixed. What is the meaning of the tags in the top pane? They
+seem only to say "IndentantionError:syntax error" or "SyntaxError:syntax
+error" which isn't super helpful. I guess it's just listing the python
+error class, but since they are basically all SyntaxError (except
+IndentationError which python treats separately for some reason) they
+are not at all informative</div>
+</div>
+<h4>Qwen 3.6 35B A3B / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">dataset.json contains a list of 100 python code snippets (functions)
+that have errors introduced. Considering only the code and the "error
+display" that shows the error python would generate, write an app that a
+human reviewer could use to confirm the error by adding an annotation of
+the location and updating the error message if necessary, and edit the
+code to make it correct. This of this as a test for the human to use
+pythons error message to confirm what is wrong and make it right.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">I need port 8765 for something else, can you run it on 8764
+please?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you add a sidebar for navigation that lets the user scroll
+through the samples?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK great. Now let's hide the error category from the user. The user
+should only base their annotation off of the python error message and
+the code</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks good. Can you make it automatically save any code changes when
+edits are made? Right now if I fix the code then click to another page
+without confirming, the changes are lost.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">One last thing, can you make it possible to highlight a set of
+columns within a row where the error occurs? Right we can only pick the
+row for the annotation</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you make it so highlighting automaticall adds the annotation,
+like if I highlight cols 5-7 it will populate the fields with those
+values?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">That works. Now can you add a way to verify that there are no longer
+syntax errors in the corrected code?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Small issue, the button starts yellow and says "check syntax" but
+once clicked it doesn't go back to this state, for example it says
+"syntax error" and stays that way even if I go to another sample</div>
+</div>
+<h4>Laguna Poolside 2.1 / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">dataset.json contains a list of 100 python code snippets (functions)
+that have errors introduced. Considering only the code and the "error
+display" that shows the error python would generate, write an app that a
+human reviewer could use to confirm the error by adding an annotation of
+the location and updating the error message if necessary, and edit the
+code to make it correct. This of this as a test for the human to use
+pythons error message to confirm what is wrong and make it right.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you please change it so the dataset is preloaded for now</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK - seems to load now. Can you add a navigation pane on the left to
+scroll through and move to any of the items?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">There is an issue with the alignment, the sidebar is on top of the
+main panel. The side navigation bar should scroll separately and the
+main annotation panel should stay in a fixed spot occupying most of the
+screen</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Looks like you ran out of space before deciding on any action. Please
+concisely take some action to fix the alignment issue</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">There seems to be a bug where the main panel doesn't scroll now, so I
+can't see all the fields. The rest looks good.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">A weird error now, the main panel scrolls independently but it's all
+in a thin horizontal area towards the top of the screen so only about
+two lines of text are visible at a time and most of the screen is
+blank</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Now it seems like neither the sidebar nor the main pane scrolls? The
+content and size look right</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">You went in a seemingly infinite thinking loop and failed to reach a
+decision. Please complete the request with minimal thinking</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK great. Now let's hide the error category, as well as the error
+description at the top from the user. The user should only base their
+annotation off of the python error message and the code</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Better take them out of the sidebar too please. Can you just keep the
+numbers and add the name of the function as an identifier</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Did you restart the server, I still see the old interface even when I
+refresh</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Works, thanks. One last thing, when I click `verify fix` I get
+`Failed to load Pyodide: V.default.parse is not a function`</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">This is on a mac, what's the right way to refresh? cmd-shift-r still
+results in the same error</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK now it gets past that error, says it's loading pyodide, then
+errors with `Verification failed: can't access property "startsWith",
+result is undefined`</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Works!. Now I notice I can only select the line of the error. Is it
+possible to let the user highlight the columns as well as the row where
+the error occurs?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">That worked. But edits and annotations don't persist when you go to a
+different item, either by clicking next or by clicking in the nav panel.
+If I make and edit and then click to another item, then click back, it's
+gone, same for when I change the annotation.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">The fix works for the code changes but not the annotation</div>
+</div>
+<h4>Meta Muse Glimmer / Pi</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">dataset.json contains a list of 100 python code snippets (functions)
+that have errors introduced. Considering only the code and the "error
+display" that shows the error python would generate, write an app that a
+human reviewer could use to confirm the error by adding an annotation of
+the location and updating the error message if necessary, and edit the
+code to make it correct. This of this as a test for the human to use
+pythons error message to confirm what is wrong and make it right.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Can you add a side navigation bar where the user can scroll
+through the samples easily?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">It seems like it's not loading the samples, I see the layout
+including a sidebar but I don't see any of the content and the interface
+doesn't work. Also, when I kill the server with ctrl-c it doesn't free
+up the port which is annoying</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK great. Now let's hide the error category, as well as the error
+description at the top from the user. The user should only base their
+annotation off of the python error message and the code</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK - a bit of cleanup. When I press `tab` in the corrected code
+block, it takes be to the next field (the save review button). I'd
+expect it to add a tab in the editor window</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Great. Now with respect to the annotation. Can you make it so the
+user can click and highlight the location?</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK that works. can you also update the titles shown in the side
+navigation bar so it shows the function name along with the number as a
+way to make it easier to navigate</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">Can you take off the alert than pops up when saving and just
+automatically save any updates. This will make is faster for a person to
+work through them</div>
+</div>
+<h4>Claude Opus 5 / Claude Code</h4>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">dataset.json contains a list of 100 python code snippets (functions)
+that have errors introduced. Considering only the code and the "error
+display" that shows the error python would generate, write an app that a
+human reviewer could use to confirm the error by adding an annotation of
+the location and updating the error message if necessary, and edit the
+code to make it correct. This of this as a test for the human to use
+pythons error message to confirm what is wrong and make it right.</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">OK great. Now let's hide the error category, as well as the error
+description at the top from the user. The user should only base their
+annotation off of the python error message and the code</div>
+</div>
+<div class="turn">
+<p class="turn-label">## user</p>
+<div class="prompt">I think the verdict is OK for now. Can you remove the
+SyntaxError/TabError/IndentationError tags as well. I understand the
+intent but they are basically all syntax errors, which is the point of
+the exercise, python just has more resolution re errors related to
+whitespace for some reason, but it's not super helpful to have about
+90/100 just labeled syntax error. I think we can just keep the
+numbering, maybe add the function name as an identifier to keep them
+more memorable</div>
+</div>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a
+href="https://artificialanalysis.ai/agents/coding-agents">https://artificialanalysis.ai/agents/coding-agents</a><a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a
+href="https://www.marble.onl/posts/this_cost_170.html">https://www.marble.onl/posts/this_cost_170.html</a><a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a
+href="https://x.com/karpathy/status/2083749667410727319">https://x.com/karpathy/status/2083749667410727319</a><a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li
+id="fn4"><p><a
+href="https://www.netlify.com/blog/one-prompt-11-models-very-different-results/">https://www.netlify.com/blog/one-prompt-11-models-very-different-results/</a><a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+
+<div id="lightbox" role="dialog" aria-modal="true" aria-label="App recording">
+  <button class="lb-close" type="button" aria-label="Close">&times;</button>
+  <p class="lb-loading">loading…</p>
+  <img alt="" hidden />
+  <p class="lb-caption"></p>
+</div>
+<script>
+(function () {
+  var box = document.getElementById('lightbox');
+  var img = box.querySelector('img');
+  var cap = box.querySelector('.lb-caption');
+  var spin = box.querySelector('.lb-loading');
+  var closeBtn = box.querySelector('.lb-close');
+  var lastFocus = null;
+
+  function open(src, caption, trigger) {
+    lastFocus = trigger || null;
+    cap.textContent = caption || '';
+    img.hidden = true;
+    spin.style.display = '';
+    img.onload = function () {
+      spin.style.display = 'none';
+      img.hidden = false;
+    };
+    img.src = src;
+    box.classList.add('open');
+    closeBtn.focus();
+  }
+
+  function close() {
+    box.classList.remove('open');
+    img.removeAttribute('src');   // stop the gif and free memory
+    img.hidden = true;
+    if (lastFocus) { lastFocus.focus(); }
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('a.shot'), function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      open(a.getAttribute('href'), a.getAttribute('data-caption'), a);
+    });
+  });
+
+  box.addEventListener('click', function (e) {
+    if (e.target === img) { return; }   // clicks on the gif itself do nothing
+    close();
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && box.classList.contains('open')) { close(); }
+  });
+})();
+</script>
+</body>
+</html>

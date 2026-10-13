@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Scaning AI application code</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    span.underline{text-decoration: underline;}
+    div.column{display: inline-block; vertical-align: top; width: 50%;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    ul.task-list{list-style: none;}
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+  <!--[if lt IE 9]>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv-printshiv.min.js"></script>
+  <![endif]-->
+</head>
+<body>
+<p><h2>Scanning AI application code for vulnerabilities and performance issues</h2></p>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@kereva.io<br>March 17, 2025</a></p>
+<p><em>Test-based evaluation of AI systems forms only a part of the quality assurance process. We discuss other offerings that supplement evals and mention an open-source static analysis tool we have built to scan code implementing LLM workflows for issues that could lead to security and performance problems.</em></p>
+<p>We previously discussed the gaps in using “evals” or test-based performance measurement for systems that use large language models. Part of the problem is that evals look at behavior and don’t go to root cause. Passing an evaluation does not mean there are no underlying issues, it just means particular symptoms are not present.</p>
+<p>AI models, although technically deterministic (with caveats), are intractably complex and so we cannot predict how they will respond to every input, we can only test. But, when we evaluate systems and find deficiencies, these are very often traceable to some deterministic root cause and not purely random behavior. For example, hallucination in RAG is likely to arise from incomplete or ambiguous information included as context, rather than appearing out of the blue. On the other hand, some behaviors, like security concerns due to prompt injection, are an inevitable consequence of LLM architecture. These can only be eliminated by sanitization of inputs or outputs; behavioral evaluation only checks how easy the exploit is for some known set of attacks, not whether it’s possible.</p>
+<p>The point is that system architecture is important, and evals don’t test architecture directly, just behavior. There are two families of tools we’ve seen that get closer to evaluating architecture.</p>
+<p>First are those that log and analyze traces of AI program execution. Arize<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> maintains an open source observability framework that records execution traces during evals and/or production runs. I find these are particularly useful when building with more complicated frameworks like LangChain where data flows through many steps before the actual LLM call. The traces let you examine and debug this flow.</p>
+<p>Invariant Labs<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> has a trace analyzer that scans agent execution traces for evidence of bugs or security violations. They support user defined policies to scan for specific issues and built-in security scans.</p>
+<p>The tracing approach is good because it gets at both the behavior and architecture to give a full view of why the system behaves as it does. Additionally, the scanning capabilities of such tools can support runtime scanning, similar to software like Guardrails<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>.</p>
+<p>The downside is that these scans rely either on test or runtime inputs and are in that sense reactive; the only way to find an issue is when an input that triggers one comes along (this input could be part of a test set of course). Thus, the Rumsfeld problem (we don’t know what we don’t know) and its cousin known unknowns (we may know jailbreaks are possible, we just didn’t find one) still exist.</p>
+<p>The second option for scanning is direct code analysis. There are some model scanners such as Protect AI’s Model Scan<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a> that look at the model code itself for security exploits. But these focus on supply chain attacks compromising model execution rather than behavior vulnerabilities of LLMs (like prompt injection). We emphasize the distinction between the <em>model code</em> that is the actual matrix multiplications etc. that make up the model inference, and the <em>application code</em> that routes data to the model as part of a prompt and then interprets the model output and passes this back to the user or onward for more processing.</p>
+<p>A security focused application code analysis tool is Agentic Radar by splxAI<a href="#fn5" class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a>. This software scans code (as of writing it focuses on agent frameworks from LangChain and CrewAI) to look for potential security issues. The advantage here is that the code scan addresses the root cause rather than behavior and so give more confidence about coverage of vulnerabilities because it doesn’t rely on testing specific prompts. It can also be applied simply during development, run offline.</p>
+<p>Finally, we have just released Kereva-Scanner<a href="#fn6" class="footnote-ref" id="fnref6" role="doc-noteref"><sup>6</sup></a>, a framework and application agnostic code scanner that looks for both security and performance issues in LLM code. It currently supports python and uses abstract syntax tree analysis to look at both prompts and code flow to scan for different vulnerabilities. The scanner is open source, with pre-built scans, and custom rules. The picture below shows a snippet of scan output, in which issues like sanitization and proper definitions and constraints for structured output are highlighted.</p>
+<p><img src="media/kereva-output.png" style="width:5.67545in;height:4.20202in" alt="" /><br>
+<strong><small>Figure: Example output from Kereva-scanner</small></strong></p>
+<p>For traditional software, unit tests, trace-debugging, and static analysis tools all form a toolkit to check for application security and quality. The same evolution is happening with LLM software. Speculation is that evals have had the emphasis because of how LLMs evolved out of academic AI where model validation was the core activity in testing performance. But as LLMs become the foundation of commercial software, there is going to be increased emphasis on other testing, and static scanning has a role to play that is currently under-appreciated.</p>
+<section class="footnotes" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1" role="doc-endnote"><p><a href="https://arize.com/">https://arize.com/</a><a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2" role="doc-endnote"><p><a href="https://github.com/invariantlabs-ai/invariant?tab=readme-ov-file#analyzer">https://github.com/invariantlabs-ai/invariant?tab=readme-ov-file#analyzer</a><a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3" role="doc-endnote"><p><a href="https://www.guardrailsai.com/">https://www.guardrailsai.com/</a><a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4" role="doc-endnote"><p><a href="https://protectai.com/modelscan">https://protectai.com/modelscan</a><a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5" role="doc-endnote"><p><a href="https://github.com/splx-ai/agentic-radar">https://github.com/splx-ai/agentic-radar</a><a href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6" role="doc-endnote"><p><a href="https://github.com/kereva-dev/kereva-scanner">https://github.com/kereva-dev/kereva-scanner</a><a href="#fnref6" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

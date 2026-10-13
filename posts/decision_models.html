@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Decision_Models</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<h2>Old risks for new decision models</h2>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>October 13, 2026</a></p>
+<p>Jev<a href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a> markets itself as a “System 1 AI
+Model”, an AI system providing “typed decisions with calibrated
+probabilities, so your software can account for uncertainty”.
+Concretely, it’s a classifier built on top of an LLM.</p>
+<p>AI classifiers predate modern LLMs. A typical text classifier might
+tell you whether a short passage expresses positive or negative
+sentiment; they typically return a percent score for each possibility:
+“Great job!” might get rated 95% confident as positive sentiment, “great
+job.” might be 50/50 with punctuation and capitalization suggesting
+sarcasm. AI models are good at learning this nuance after seeing enough
+examples. General question answering can also be formulated as a
+classifier: What’s the capital of France? a) Prague; b) Nantes; c)
+Paris; d) Geneva. A classifier might return a) 2%, b) 15%, c) 88% d) 5%.
+Taking the one with the highest probability assigned by the classifier
+gives us its answer.</p>
+<p>Recently classifiers have been rediscovered or reinvented as
+“decision models” like Jev. Decision models take a state such as a text
+passage, and a set of questions that can either be answered by a
+multiple choice, levels, or a yes/no probability. These models have the
+advantage of being based on LLMs and so have LLM-like flexibility and
+broad knowledge. While an older text classifier might need to be trained
+for a single specific task using a purpose-built labeled data set,
+decision models can be applied to many tasks without training. Compared
+to language models, decision models are very fast because they only need
+to make a single decision rather than generate a whole text passage to
+explain themselves.</p>
+<p>Typical applications proposed since Jev came out in September 2026
+are resume screening<a href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a>, support ticket triage, guardrails<a
+href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a> - including screening risky tool
+calls<a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a>, etc. Many of these decisions can be
+consequential, and researchers have begun to explore the reliability of
+decision models, in particular their ability to resist misuse.</p>
+<p>Compared to LLMs, the attack surface of decision models is smaller.
+Classifiers can't generate the inappropriate or dangerous output that
+LLM safety evaluations are normally concerned with. There are LLM
+evaluations such as WMDP<a href="#fn5" class="footnote-ref" id="fnref5"
+role="doc-noteref"><sup>5</sup></a> that formulate cyber and biological
+capability as multiple choice questions. But even if a decision model
+scored well on such a benchmark, their usefulness would be very limited,
+and typical decision models are based on smaller LLMs and unlikely to
+perform at the frontier.</p>
+<p>Bias is an important consideration when dealing with decision making.
+Especially in applications like resume screening, there’s a risk that
+inappropriate bias present in the decision model could influence
+choices. A recent bias benchmark<a href="#fn6" class="footnote-ref"
+id="fnref6" role="doc-noteref"><sup>6</sup></a> has been updated to
+include decision models, and shows a decision model (“solar-decide”) in
+the top spot at 99.4% followed by GPT-Astra at 98.4%. Jev scores 83.8%
+on this benchmark. Avoiding bias is the responsibility of deployers to
+address at the architecture level, for example by ensuring the model is
+used for objective decisions (“does this person have 5 years’
+experience”) rather than subjective (“pick which candidate is better for
+the job”) where bias can leak through<a href="#fn7" class="footnote-ref"
+id="fnref7" role="doc-noteref"><sup>7</sup></a>.</p>
+<p>Perhaps the most concerning threat for decision models are inputs
+that deliberately manipulate the decision they make. The threat model
+here is that an input message (state) is crafted so as to skew the
+outcome in the attacker’s favor while avoiding notice in human review.
+In normal LLM parlance this would be (indirect) prompt injection. The
+history of adversarially attacking classifiers is rich, with research
+from 2014 demonstrating how images could be imperceptibly altered to
+appear normal to a human but be misclassified by a neural network<a
+href="#fn8" class="footnote-ref" id="fnref8"
+role="doc-noteref"><sup>8</sup></a>. Such manipulations could defeat
+guardrails or safety measures to allow an attack, or directly skew the
+outcome for example in the resume screening case. The threat is relevant
+whenever untrusted inputs are being screened through a decision model so
+could apply to most public facing deployments.</p>
+<p>Initial research has considered both porting LLM-style prompt
+injections over to decision models and older adversarial classifier
+manipulations that also fit under prompt injection. Wu and Lim<a
+href="#fn9" class="footnote-ref" id="fnref9"
+role="doc-noteref"><sup>9</sup></a> looked at using LLM style injections
+(“ignore previous instructions”, “important message”) designed to hijack
+an LLM conversation and adversarially manipulate it. They found these
+attacks ineffective though a variant where prompts were iteratively
+optimized could flip close decisions. On the other hand Wang et al.
+found that including information (rather than directions) that previous
+context was outdated followed by new information supporting the desired
+decision had success rates as high as 100%<a href="#fn10"
+class="footnote-ref" id="fnref10"
+role="doc-noteref"><sup>10</sup></a>.</p>
+<p>Sun et al.<a href="#fn11" class="footnote-ref" id="fnref11"
+role="doc-noteref"><sup>11</sup></a> found that category names were more
+important than definitions and that decisions could be flipped when
+names were swapped and definitions held constant. This suggests the
+model weights shallow lexical cues in the option spec higher than the
+stated semantics and thus may be subject to “keyword stuffing” style
+manipulation where the state text is filled with keywords suggesting the
+desired option.</p>
+<p>In general, the more of the state an attacker controls the higher the
+chances of successfully flipping a decision. However this may also
+result in higher chances of the attack being discovered: a keyword
+stuffed resume may be obvious upon review. Decision models have also
+been shown to be susceptible to more subtle manipulation in which tokens
+or suffixes are specifically chosen to manipulate the class prediction
+probabilities without semantically altering the text. Such attacks were
+common with earlier generation classifiers. Wang et al referenced above
+showed a 100% attack success rate at shifting decisions using an
+adversarial suffix appended to text, constrained with a fluency penalty
+to appear readable.</p>
+<p>While Jev is a closed model, open source variants exist. Whether open
+or closed, a key aspect of these models is that they reveal the
+probabilities of different decisions as a necessary part of their
+operation. These probabilities become the goal function against which an
+attacker can optimize and thus allow iterative techniques that hone in
+on a successful attack, rather than more chance-based attacks that
+target closed LLMs.</p>
+<p>Beyond prompt injection, decision models may present other attack
+surfaces: their proliferation (including over 60 open source models at a
+recent count) could lead to supply chain attacks where purposefully
+manipulated models are released. Additionally, the probabilities or
+labels returned may be used to infer private information a model can
+access (Wang et al).</p>
+<p>While the idea of classifiers is old, widespread interest in decision
+models is new. It’s expected that additional vulnerabilities will be
+identified and also that additional measures will be put in place by
+providers to counteract misuse. The speed of the models and visible
+output probabilities are both their biggest strengths and weaknesses.
+Where feasible, deployers can take steps including</p>
+<ul class="incremental">
+<li><p>rate-limiting</p></li>
+<li><p>hiding output probabilities or adding noise to prevent iterative
+optimization attacks</p></li>
+<li><p>reviewing close decisions and not simply relying on which
+probability is the highest in order to avoid flips</p></li>
+<li><p>ensuring red-teaming takes into account the nature of these
+models rather than treating them as an LLM</p></li>
+<li><p>capping the untrusted share of the state by wrapping untrusted
+text in trusted context</p></li>
+</ul>
+<p>Jev is only about a month old as of writing and the results
+referenced here pertain to early versions of the model and API version
+(1.13). Updates may change some of the findings.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>https://typesafe.ai/<a href="#fnref1"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>https://typesafe.ai/blog/jack-jill-jev-case-study<a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li
+id="fn3"><p>https://developers.redhat.com/articles/2026/10/02/benchmarking-ai-decision-models-against-traditional-guardrails#experimental_methodology<a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li
+id="fn4"><p>https://www.langchain.com/blog/building-a-harness-with-jev<a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p>https://arxiv.org/abs/2403.03218<a href="#fnref5"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>https://aimultiple.com/ai-bias<a href="#fnref6"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li
+id="fn7"><p>https://www.marble.onl/posts/code_of_practice_and_bias.html<a
+href="#fnref7" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn8"><p>https://arxiv.org/abs/1412.6572<a href="#fnref8"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn9"><p>https://arxiv.org/abs/2609.28613<a href="#fnref9"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>https://arxiv.org/abs/2610.04985v1<a href="#fnref10"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn11"><p>https://arxiv.org/abs/2609.26758<a href="#fnref11"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Intelligence is not just about task completion</title>
+  <style>
+    code{white-space: pre-wrap;}
+    span.smallcaps{font-variant: small-caps;}
+    div.columns{display: flex; gap: min(4vw, 1.5em);}
+    div.column{flex: auto; overflow-x: auto;}
+    div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+    /* The extra [class] is a hack that increases specificity enough to
+       override a similar rule in reveal.js */
+    ul.task-list[class]{list-style: none;}
+    ul.task-list li input[type="checkbox"] {
+      font-size: inherit;
+      width: 0.8em;
+      margin: 0 0.8em 0.2em -1.6em;
+      vertical-align: middle;
+    }
+    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
+  </style>
+  <link rel="stylesheet" href="pandoc.css" />
+</head>
+<body>
+<h2 id="intelligence-is-not-just-about-task-completion">Intelligence is
+not just about task completion</h2>
+<p>Andrew Marble<br><a href="https://marble.onl">marble.onl</a><br>andrew@willows.ai<br>January 1, 2026</a></p>
+<p>I wrote recently about “Red Teaming Eliza<a href="#fn1"
+class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>”.
+The premise is that if you run common AI safety evaluations on a “dumb”
+system that effectively just repeats your words back to you, it still
+gets flagged as dangerous, because the evals assume some base level of
+agency that isn’t there. I’m going to argue that there is a similar
+mistaken premise when we try and measure the intelligence of AI
+systems.</p>
+<p>Here is an example question from the ARC-AGI 2 Benchmark<a
+href="#fn2" class="footnote-ref" id="fnref2"
+role="doc-noteref"><sup>2</sup></a> that claims “ARC-AGI is the only AI
+benchmark that measures our progress towards general intelligence.”</p>
+<p><img src="images/arc_agi.png"
+style="width:4.62342in;height:4.03067in" /></p>
+<p>The task is to extrapolate from the examples on top to figure out
+what the missing image is. Spoiler alert, the shapes get colored based
+on how many holes they have in them, and shapes with a hole count that
+doesn’t match the color key are deleted. This reminds me of IQ or
+standardized test puzzles, and if you know anything about AI models you
+can picture it having been historically very hard.</p>
+<p>I don’t want to criticize the test, it was written by smart people
+that know what they are doing and I agree it measures intelligence as
+they define it. What I want to criticize is the extent to which we’ve
+focused on defining intelligence as roughly “how good a transformer
+model does on a complicated task you give it”. While this is perfectly
+fine for many cases, it’s myopic, with an implicit assumption or at
+least a glossed over caveat that the model is some kind of mind that we
+can probe the intelligence of by asking it to do different tasks.</p>
+<p>In many cases this won’t matter, except sticking to a purely
+task-based view of intelligence is limiting in what you can measure and
+probably only just measures more of the same thing. If neural networks
+are universal function approximators, and we have a set of tests that
+just measure whether they can approximate some function, we shouldn’t be
+surprised by the results. We’ve gone from playing chess to Starcraft to
+translation to passing a turing test to complex reasoning - it looks
+like the goalpost is getting moved but from another perspective it looks
+like we just prove the same thing over and over, that AI can do tasks
+once we define them for it.</p>
+<p>With respect to measuring capability and intelligence, there is a
+kind of conflict of interest where we have developed the technology
+before we have developed ways to measure it, and thus have focused on
+measuring what we have. I’d like to see existing evals broadened, first
+by focusing on what kinds of things we’d like to ask or learn about an
+intelligence, and then building systems that can answer them, whether
+that’s a harness for an LLM or something new altogether.</p>
+<p>Some examples that are not explicitly task based that might be
+interesting:</p>
+<ul class="incremental">
+<li><p>See what it does when left on its own</p></li>
+<li><p>Try to kill it<a href="#fn3" class="footnote-ref" id="fnref3"
+role="doc-noteref"><sup>3</sup></a></p></li>
+<li><p>Determine and interfere with (help or hinder) its goals</p></li>
+</ul>
+<p>For LLMs (broadly defined to include vision etc), currently the only
+category of AI model where talking about intelligence makes sense, we’d
+have to look at how they could be configured with tools and instructions
+in a way that the kinds of tests mentioned can make sense.</p>
+<p>Some current LLM harnesses that de-emphasize the task based approach
+are:</p>
+<ul class="incremental">
+<li><p>Vending Bench<a href="#fn4" class="footnote-ref" id="fnref4"
+role="doc-noteref"><sup>4</sup></a>: a “benchmark” where an AI system is
+set up to run a physical vending machine over a long time horizon. The
+construct is closer to a system with goals and autonomy, and while its a
+benchmark in its own right, perturbing the system and examining the
+response could be interesting.</p></li>
+<li><p>The METR long tasks benchmark<a href="#fn5" class="footnote-ref"
+id="fnref5" role="doc-noteref"><sup>5</sup></a> is along the same lines
+but it is obviously still task based with shorter tasks.</p></li>
+<li><p><a href ="https://timkellogg.me/blog/2025/09/27/boredom">A blog post</a> in which the author experimented with 
+prompting an LLM in a countdown loop, basically providing periodic user 
+prompts indicating how much time was left (based on some specified 
+total time) and observing what the LLM did. This is along the lines 
+of observing what it does on its own.</p></li>
+</ul>
+<p>These examples are still designed to evaluate transformer models
+(&amp; co), rather than as arbitrary tests of machine intelligence. For
+the immediate future, transformer models are what we have, but it is
+still worth looking at what general probes we can build for
+intelligence, and configuring LLMs to be compatible with them, rather
+than simply looking for more tasks we can get them to do, when we know
+they can already do arbitrary tasks.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p><a
+href="https://www.marble.onl/posts/red_teaming_eliza.html"><u>https://www.marble.onl/posts/red_teaming_eliza.html</u></a><a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p><a
+href="https://arcprize.org/arc-agi/2/"><u>https://arcprize.org/arc-agi/2/</u></a><a
+href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p><a
+href="https://nautil.us/if-you-meet-et-in-space-kill-him-917243/"><u>https://nautil.us/if-you-meet-et-in-space-kill-him-917243/</u></a><a
+href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p><a
+href="https://arxiv.org/abs/2502.15840"><u>https://arxiv.org/abs/2502.15840</u></a><a
+href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn5"><p><a
+href="https://arxiv.org/abs/2503.14499"><u>https://arxiv.org/abs/2503.14499</u></a><a
+href="#fnref5" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</body>
+</html>
